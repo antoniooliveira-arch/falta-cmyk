@@ -1,47 +1,12 @@
 {
   "version": "7",
-  "dialect": "mysql",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1787784061093,
-      "tag": "0000_gray_caretaker",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1787784501658,
-      "tag": "0001_bouncy_random",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1787784530336,
-      "tag": "0002_cultured_jamie_braddock",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1787785158126,
-      "tag": "0003_handy_skrulls",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1787802788729,
-      "tag": "0004_petite_lily_hollister",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "5",
-      "when": 1787803053513,
-      "tag": "0005_glamorous_vermin",
+      "version": "7",
+      "when": 1787955996371,
+      "tag": "0000_opposite_kid_colt",
       "breakpoints": true
     }
   ]

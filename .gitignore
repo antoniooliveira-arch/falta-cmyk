@@ -116,3 +116,6 @@ client/public/__manus__/version.json
 # Supabase
 .supabase/
 supabase/.temp/
+
+.vercel
+.env*
