@@ -166,15 +166,15 @@ export async function reviewSubmission(input: { id: number; status: "APROVADO" |
   return db.update(enviosFaltas).set({ status: input.status, analisadoPor: input.analisadoPor, analisadoEm: new Date(), observacaoAdmin: input.observacaoAdmin }).where(eq(enviosFaltas.id, input.id));
 }
 
-export async function getUserByEmail(email: string) {
+export async function getUserByUsername(username: string) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(users).where(eq(users.email, email.toLowerCase())).limit(1);
+  const result = await db.select().from(users).where(eq(users.username, username.toLowerCase())).limit(1);
   return result[0];
 }
 
-export async function authenticateUser(email: string, password: string) {
-  const user = await getUserByEmail(email);
+export async function authenticateUser(username: string, password: string) {
+  const user = await getUserByUsername(username);
   if (!user || !user.passwordHash) return null;
   const valid = await verifyPassword(password, user.passwordHash);
   if (!valid) return null;
@@ -187,13 +187,14 @@ export async function updateUserPassword(userId: number, newPasswordHash: string
   return db.update(users).set({ passwordHash: newPasswordHash, mustChangePassword: 0, updatedAt: new Date() }).where(eq(users.id, userId));
 }
 
-export async function createUserWithPassword(input: { email: string; name: string; password: string; role?: "user" | "admin"; loginMethod?: string }) {
+export async function createUserWithPassword(input: { username: string; name: string; password: string; role?: "user" | "admin"; loginMethod?: string; email?: string }) {
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
   const passwordHash = await hashPassword(input.password);
   const values = {
-    email: input.email.toLowerCase(),
+    username: input.username.toLowerCase(),
     name: input.name,
+    email: input.email?.toLowerCase() ?? null,
     passwordHash,
     loginMethod: input.loginMethod ?? "password",
     role: input.role ?? "user",

@@ -11,7 +11,7 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => { if (ctx.user.
 const businessContext = async (userId: number, authRole: string) => { const businessUser = await getBusinessUser(userId); if (authRole === "admin") return { perfil: "ADMIN" as const, escolaId: undefined }; if (!businessUser || businessUser.perfil !== "ESCOLA" || !businessUser.escolaId || !businessUser.ativo) throw new TRPCError({ code: "FORBIDDEN", message: "Usuário sem unidade escolar ativa vinculada." }); return { perfil: "ESCOLA" as const, escolaId: businessUser.escolaId }; };
 const statusSchema = z.enum(["RASCUNHO", "ENVIADO", "EM_ANALISE", "APROVADO", "REJEITADO"]); const periodSchema = z.string().regex(/^(20\d{2}-(0[1-9]|1[0-2])|(janeiro|fevereiro|março|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro) de 20\d{2})$/i, "Informe o período como YYYY-MM ou Mês de YYYY.");
 
-const loginInput = z.object({ email: z.string().email(), password: z.string().min(1) });
+const loginInput = z.object({ username: z.string().min(1), password: z.string().min(1) });
 const changePasswordInput = z.object({ currentPassword: z.string().min(1), newPassword: z.string().min(6) });
 
 export const appRouter = router({
@@ -20,12 +20,12 @@ export const appRouter = router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => { const cookieOptions = getSessionCookieOptions(ctx.req); ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 }); return { success: true } as const; }),
     login: publicProcedure.input(loginInput).mutation(async ({ input, ctx }) => {
-      const user = await authenticateUser(input.email, input.password);
-      if (!user) throw new TRPCError({ code: "UNAUTHORIZED", message: "E-mail ou senha inválidos" });
+      const user = await authenticateUser(input.username, input.password);
+      if (!user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuário ou senha inválidos" });
       const sessionToken = await sdk.createSessionToken(user.openId ?? `local_${user.id}`, { name: user.name ?? "", expiresInMs: ONE_YEAR_MS });
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-      return { user: { id: user.id, name: user.name, email: user.email, role: user.role, mustChangePassword: user.mustChangePassword } };
+      return { user: { id: user.id, name: user.name, username: user.username, role: user.role, mustChangePassword: user.mustChangePassword } };
     }),
     changePassword: protectedProcedure.input(changePasswordInput).mutation(async ({ input, ctx }) => {
       const user = await getUserById(ctx.user.id);

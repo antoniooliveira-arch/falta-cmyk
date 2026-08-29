@@ -27,8 +27,17 @@ const ESCOLAS = [
 ];
 
 const DEFAULT_PASSWORD = "123";
-const ADMIN_EMAIL = "admin@controle-faltas.local";
+const ADMIN_USERNAME = "admin";
 const ADMIN_PASSWORD = "admin123";
+
+function normalizeUsername(nome: string): string {
+  return nome
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
 
 async function seed() {
   if (!process.env.DATABASE_URL) {
@@ -41,18 +50,17 @@ async function seed() {
 
   // Create admin user
   console.log("\nProcessando: ADMIN");
-  let adminUser = await db.select().from(users).where(eq(users.email, ADMIN_EMAIL)).limit(1);
+  let adminUser = await db.select().from(users).where(eq(users.username, ADMIN_USERNAME)).limit(1);
   let adminUserId: number;
 
   if (adminUser[0]) {
     adminUserId = adminUser[0].id;
     console.log(`  Admin já existe (ID: ${adminUserId})`);
-    // Update to ensure admin role
     await db.update(users).set({ role: "admin", mustChangePassword: 0 }).where(eq(users.id, adminUserId));
   } else {
     const passwordHash = await hashPassword(ADMIN_PASSWORD);
     const result = await db.insert(users).values({
-      email: ADMIN_EMAIL,
+      username: ADMIN_USERNAME,
       name: "Administrador do Sistema",
       passwordHash,
       loginMethod: "password",
@@ -68,7 +76,7 @@ async function seed() {
     await db.insert(usuarios).values({
       authUserId: adminUserId,
       nome: "Administrador do Sistema",
-      email: ADMIN_EMAIL,
+      email: "admin@controle-faltas.local",
       perfil: "ADMIN",
       ativo: 1,
     });
@@ -92,8 +100,8 @@ async function seed() {
       console.log(`  Escola criada (ID: ${escolaId})`);
     }
 
-    const email = `${escola.codigo.toLowerCase()}@escola.local`;
-    let user = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const username = normalizeUsername(escola.nome);
+    let user = await db.select().from(users).where(eq(users.username, username)).limit(1);
     let userId: number;
 
     if (user[0]) {
@@ -102,7 +110,7 @@ async function seed() {
     } else {
       const passwordHash = await hashPassword(DEFAULT_PASSWORD);
       const result = await db.insert(users).values({
-        email,
+        username,
         name: escola.nome,
         passwordHash,
         loginMethod: "password",
@@ -110,7 +118,7 @@ async function seed() {
         mustChangePassword: 1,
       }).returning({ id: users.id });
       userId = result[0]!.id;
-      console.log(`  Usuário criado (ID: ${userId})`);
+      console.log(`  Usuário criado (ID: ${userId}) com username: ${username}`);
     }
 
     let businessUser = await db.select().from(usuarios).where(eq(usuarios.authUserId, userId)).limit(1);
@@ -118,7 +126,7 @@ async function seed() {
       await db.insert(usuarios).values({
         authUserId: userId,
         nome: escola.nome,
-        email,
+        email: `${escola.codigo.toLowerCase()}@escola.local`,
         perfil: "ESCOLA",
         escolaId,
         ativo: 1,
@@ -132,11 +140,12 @@ async function seed() {
   console.log("\n✅ Seed concluído!");
   console.log("\n=== CREDENCIAIS DE ACESSO ===");
   console.log("\n🔐 ADMIN:");
-  console.log(`   Email: ${ADMIN_EMAIL}`);
+  console.log(`   Usuário: ${ADMIN_USERNAME}`);
   console.log(`   Senha: ${ADMIN_PASSWORD}`);
-  console.log("\n🏫 ESCOLAS (senha padrão: 123 - deve alterar no 1º acesso):");
+  console.log("\n🏫 ESCOLAS (senha padrão: 123 - pode alterar quando quiser):");
   for (const escola of ESCOLAS) {
-    console.log(`   ${escola.nome}: ${escola.codigo.toLowerCase()}@escola.local / 123`);
+    const username = normalizeUsername(escola.nome);
+    console.log(`   ${escola.nome}: ${username} / 123`);
   }
   process.exit(0);
 }
