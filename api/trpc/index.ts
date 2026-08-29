@@ -26,11 +26,13 @@ async function getUserFromRequest(req: Request): Promise<User | null> {
     
     if (typeof openId === "string" && openId.startsWith("local_")) {
       const userId = parseInt(openId.replace("local_", ""), 10);
-      return await db.getUserById(userId);
+      const user = await db.getUserById(userId);
+      return user ?? null;
     }
     
     if (typeof openId === "string") {
-      return await db.getUserByOpenId(openId);
+      const user = await db.getUserByOpenId(openId);
+      return user ?? null;
     }
   } catch (error) {
     console.warn("[Auth] Session verification failed", String(error));
