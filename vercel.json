@@ -2,11 +2,6 @@
   "buildCommand": "pnpm run build:client",
   "outputDirectory": "dist/public",
   "framework": "vite",
-  "functions": {
-    "api/trpc/**": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/trpc/(.*)",
