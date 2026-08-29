@@ -2,6 +2,7 @@ import { and, count, desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { InsertUser, alunos, escolas, enviosFaltas, faltas, importacoesPdf, usuarios, users } from "../drizzle/schema";
 import { ENV } from "./_core/env";
+import { hashPassword, verifyPassword } from "./_core/password";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 export async function getDb() {
@@ -163,4 +164,48 @@ export async function reviewSubmission(input: { id: number; status: "APROVADO" |
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
   return db.update(enviosFaltas).set({ status: input.status, analisadoPor: input.analisadoPor, analisadoEm: new Date(), observacaoAdmin: input.observacaoAdmin }).where(eq(enviosFaltas.id, input.id));
+}
+
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.email, email.toLowerCase())).limit(1);
+  return result[0];
+}
+
+export async function authenticateUser(email: string, password: string) {
+  const user = await getUserByEmail(email);
+  if (!user || !user.passwordHash) return null;
+  const valid = await verifyPassword(password, user.passwordHash);
+  if (!valid) return null;
+  return user;
+}
+
+export async function updateUserPassword(userId: number, newPasswordHash: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  return db.update(users).set({ passwordHash: newPasswordHash, mustChangePassword: 0, updatedAt: new Date() }).where(eq(users.id, userId));
+}
+
+export async function createUserWithPassword(input: { email: string; name: string; password: string; role?: "user" | "admin"; loginMethod?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const passwordHash = await hashPassword(input.password);
+  const values = {
+    email: input.email.toLowerCase(),
+    name: input.name,
+    passwordHash,
+    loginMethod: input.loginMethod ?? "password",
+    role: input.role ?? "user",
+    mustChangePassword: 1,
+  };
+  const result = await db.insert(users).values(values).returning({ id: users.id });
+  return result[0]?.id;
+}
+
+export async function getUserById(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  return result[0];
 }
