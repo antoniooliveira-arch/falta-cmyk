@@ -45,7 +45,7 @@ const handler = (req: Request) =>
     router: appRouter,
     createContext: async () => {
       const user = await getUserFromRequest(req);
-      return { req: {} as any, res: {} as any, user };
+      return { req: {} as any, res: {} as any, user: user ?? null };
     },
   });
 
