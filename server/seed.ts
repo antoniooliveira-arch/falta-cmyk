@@ -2,6 +2,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { escolas, usuarios, users } from "../drizzle/schema";
 import { hashPassword } from "./_core/password";
 import { ENV } from "./_core/env";
+import { eq } from "drizzle-orm";
 
 const ESCOLAS = [
   { nome: "CEI LUIZ FELIPE", codigo: "CEI-LF" },
@@ -26,6 +27,8 @@ const ESCOLAS = [
 ];
 
 const DEFAULT_PASSWORD = "123";
+const ADMIN_EMAIL = "admin@controle-faltas.local";
+const ADMIN_PASSWORD = "admin123";
 
 async function seed() {
   if (!process.env.DATABASE_URL) {
@@ -35,6 +38,44 @@ async function seed() {
 
   const db = drizzle(process.env.DATABASE_URL);
   console.log("Conectado ao banco de dados");
+
+  // Create admin user
+  console.log("\nProcessando: ADMIN");
+  let adminUser = await db.select().from(users).where(eq(users.email, ADMIN_EMAIL)).limit(1);
+  let adminUserId: number;
+
+  if (adminUser[0]) {
+    adminUserId = adminUser[0].id;
+    console.log(`  Admin já existe (ID: ${adminUserId})`);
+    // Update to ensure admin role
+    await db.update(users).set({ role: "admin", mustChangePassword: 0 }).where(eq(users.id, adminUserId));
+  } else {
+    const passwordHash = await hashPassword(ADMIN_PASSWORD);
+    const result = await db.insert(users).values({
+      email: ADMIN_EMAIL,
+      name: "Administrador do Sistema",
+      passwordHash,
+      loginMethod: "password",
+      role: "admin",
+      mustChangePassword: 0,
+    }).returning({ id: users.id });
+    adminUserId = result[0]!.id;
+    console.log(`  Admin criado (ID: ${adminUserId})`);
+  }
+
+  let adminBusinessUser = await db.select().from(usuarios).where(eq(usuarios.authUserId, adminUserId)).limit(1);
+  if (!adminBusinessUser[0]) {
+    await db.insert(usuarios).values({
+      authUserId: adminUserId,
+      nome: "Administrador do Sistema",
+      email: ADMIN_EMAIL,
+      perfil: "ADMIN",
+      ativo: 1,
+    });
+    console.log(`  Perfil ADMIN criado`);
+  } else {
+    console.log(`  Perfil ADMIN já existe`);
+  }
 
   for (const escola of ESCOLAS) {
     console.log(`\nProcessando: ${escola.nome}`);
@@ -89,17 +130,17 @@ async function seed() {
   }
 
   console.log("\n✅ Seed concluído!");
-  console.log("\nCredenciais de acesso:");
-  console.log("Senha padrão para todas as escolas: 123");
-  console.log("\nExemplos:");
-  for (const escola of ESCOLAS.slice(0, 3)) {
-    console.log(`  ${escola.nome}: ${escola.codigo.toLowerCase()}@escola.local / 123`);
+  console.log("\n=== CREDENCIAIS DE ACESSO ===");
+  console.log("\n🔐 ADMIN:");
+  console.log(`   Email: ${ADMIN_EMAIL}`);
+  console.log(`   Senha: ${ADMIN_PASSWORD}`);
+  console.log("\n🏫 ESCOLAS (senha padrão: 123 - deve alterar no 1º acesso):");
+  for (const escola of ESCOLAS) {
+    console.log(`   ${escola.nome}: ${escola.codigo.toLowerCase()}@escola.local / 123`);
   }
-  console.log("  ...");
   process.exit(0);
 }
 
-import { eq } from "drizzle-orm";
 seed().catch((err) => {
   console.error("Erro no seed:", err);
   process.exit(1);
