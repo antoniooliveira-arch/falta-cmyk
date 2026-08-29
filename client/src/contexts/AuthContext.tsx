@@ -56,15 +56,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
       }
       setLoading(false);
-    } else if (meQuery.isError) {
+    } else if (meQuery.isError || (meQuery.isFetching === false && meQuery.data === undefined)) {
       setUser(null);
       setLoading(false);
     }
-  }, [meQuery.data, meQuery.isError]);
+  }, [meQuery.data, meQuery.isError, meQuery.isFetching]);
 
   const signIn = async (username: string, password: string) => {
-    await loginMutation.mutateAsync({ username, password });
-    await meQuery.refetch();
+    try {
+      await loginMutation.mutateAsync({ username, password });
+      await meQuery.refetch();
+    } catch (error) {
+      setLoading(false);
+      throw error;
+    }
   };
 
   const signOut = async () => {
