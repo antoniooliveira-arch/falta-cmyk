@@ -2,14 +2,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ShieldCheck, ArrowUpRight, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, ArrowUpRight, CheckCircle2, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 
 export default function LoginPage() {
   const { signIn, isAuthenticated, loading, user, refresh } = useAuth();
   const [, setLocation] = useLocation();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,13 +23,13 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return;
+    if (!username || !password) return;
 
     setIsSubmitting(true);
     setError(null);
 
     try {
-      await signIn(email, password);
+      await signIn(username, password);
       await refresh();
     } catch (err: any) {
       setError(err.message || "Credenciais inválidas. Tente novamente.");
@@ -72,14 +72,14 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-field">
-            <Label htmlFor="email">E-mail institucional</Label>
+            <Label htmlFor="username">Usuário</Label>
             <Input
-              id="email"
-              type="email"
-              placeholder="nome@escola.edu.br"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
+              id="username"
+              type="text"
+              placeholder="ex: cei-luiz-felipe"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="username"
               autoFocus
             />
           </div>
@@ -106,7 +106,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             className="login-button w-full"
-            disabled={isSubmitting || !email || !password}
+            disabled={isSubmitting || !username || !password}
             size="lg"
           >
             {isSubmitting ? "Entrando..." : "ENTRAR"}

@@ -1,14 +1,15 @@
-import { supabase } from "@/lib/supabase";
 import type { Escola, Usuario } from "@/types/supabase";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { trpc } from "@/lib/trpc";
 
 export type AuthUser = {
   id: string;
-  email: string | undefined;
+  username: string;
   nome: string | null;
   perfil: "ADMIN" | "ESCOLA";
   escolaId: number | null;
   escola: Escola | null;
+  mustChangePassword: boolean;
 };
 
 type AuthContextValue = {
@@ -17,8 +18,7 @@ type AuthContextValue = {
   isAuthenticated: boolean;
   isAdmin: boolean;
   isSchool: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, nome: string) => Promise<void>;
+  signIn: (username: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -35,96 +35,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchPerfil = async (authUserId: string): Promise<AuthUser | null> => {
-    const { data: perfil, error: perfilError } = await supabase
-      .from("usuarios")
-      .select("*")
-      .eq("auth_user_id", authUserId)
-      .maybeSingle();
-
-    if (perfilError || !perfil) return null;
-    const p = perfil as any;
-
-    let escola: Escola | null = null;
-    if (p.escola_id) {
-      const { data: esc } = await supabase
-        .from("escolas")
-        .select("*")
-        .eq("id", p.escola_id)
-        .maybeSingle();
-      escola = esc as Escola | null;
-    }
-
-    return {
-      id: authUserId,
-      email: p.email,
-      nome: p.nome,
-      perfil: p.perfil,
-      escolaId: p.escola_id,
-      escola,
-    };
-  };
-
-  const refresh = async () => {
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) {
-      setUser(null);
-      return;
-    }
-    const perfil = await fetchPerfil(authUser.id);
-    setUser(perfil);
-  };
+  const loginMutation = trpc.auth.login.useMutation();
+  const logoutMutation = trpc.auth.logout.useMutation();
+  const meQuery = trpc.auth.me.useQuery();
 
   useEffect(() => {
-    const getInitial = async () => {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser) {
+    if (meQuery.data) {
+      const u = meQuery.data;
+      if (u) {
+        setUser({
+          id: String(u.id),
+          username: u.username ?? "",
+          nome: u.name ?? null,
+          perfil: u.role === "admin" ? "ADMIN" : "ESCOLA",
+          escolaId: null,
+          escola: null,
+          mustChangePassword: u.mustChangePassword ?? false,
+        });
+      } else {
         setUser(null);
-        setLoading(false);
-        return;
       }
-      const perfil = await fetchPerfil(authUser.id);
-      setUser(perfil);
       setLoading(false);
-    };
+    } else if (meQuery.isError) {
+      setUser(null);
+      setLoading(false);
+    }
+  }, [meQuery.data, meQuery.isError]);
 
-    getInitial();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (session?.user) {
-          const perfil = await fetchPerfil(session.user.id);
-          setUser(perfil);
-        } else {
-          setUser(null);
-        }
-        setLoading(false);
-      }
-    );
-
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
-  }, []);
-
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-  };
-
-  const signUp = async (email: string, password: string, _nome: string) => {
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-    if (signUpError) throw signUpError;
-    if (!signUpData.user) throw new Error("Erro ao criar conta.");
+  const signIn = async (username: string, password: string) => {
+    await loginMutation.mutateAsync({ username, password });
+    await meQuery.refetch();
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    await logoutMutation.mutateAsync();
     setUser(null);
+  };
+
+  const refresh = async () => {
+    await meQuery.refetch();
   };
 
   const value = useMemo<AuthContextValue>(
@@ -135,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAdmin: user?.perfil === "ADMIN",
       isSchool: user?.perfil === "ESCOLA",
       signIn,
-      signUp,
+      signUp: async () => { throw new Error("Use admin panel to create users"); },
       signOut,
       refresh,
     }),
