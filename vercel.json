@@ -4,6 +4,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/trpc/(.*)",
+      "destination": "/api/trpc"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
