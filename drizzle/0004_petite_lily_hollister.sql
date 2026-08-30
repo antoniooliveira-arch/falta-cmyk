@@ -1,1 +1,0 @@
-ALTER TABLE `faltas` ADD `ficaiParticipa` enum('SIM','NAO') DEFAULT 'NAO' NOT NULL;
