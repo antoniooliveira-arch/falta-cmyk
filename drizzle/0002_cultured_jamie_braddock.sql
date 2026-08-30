@@ -1,0 +1,11 @@
+ALTER TABLE `alunos` ADD CONSTRAINT `alunos_escolaId_escolas_id_fk` FOREIGN KEY (`escolaId`) REFERENCES `escolas`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `envios_faltas` ADD CONSTRAINT `envios_faltas_escolaId_escolas_id_fk` FOREIGN KEY (`escolaId`) REFERENCES `escolas`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `envios_faltas` ADD CONSTRAINT `envios_faltas_usuarioId_usuarios_id_fk` FOREIGN KEY (`usuarioId`) REFERENCES `usuarios`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `envios_faltas` ADD CONSTRAINT `envios_faltas_analisadoPor_usuarios_id_fk` FOREIGN KEY (`analisadoPor`) REFERENCES `usuarios`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `faltas` ADD CONSTRAINT `faltas_alunoId_alunos_id_fk` FOREIGN KEY (`alunoId`) REFERENCES `alunos`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `faltas` ADD CONSTRAINT `faltas_escolaId_escolas_id_fk` FOREIGN KEY (`escolaId`) REFERENCES `escolas`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `faltas` ADD CONSTRAINT `faltas_registradoPor_usuarios_id_fk` FOREIGN KEY (`registradoPor`) REFERENCES `usuarios`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `importacoes_pdf` ADD CONSTRAINT `importacoes_pdf_escolaId_escolas_id_fk` FOREIGN KEY (`escolaId`) REFERENCES `escolas`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `importacoes_pdf` ADD CONSTRAINT `importacoes_pdf_usuarioId_usuarios_id_fk` FOREIGN KEY (`usuarioId`) REFERENCES `usuarios`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `usuarios` ADD CONSTRAINT `usuarios_authUserId_users_id_fk` FOREIGN KEY (`authUserId`) REFERENCES `users`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `usuarios` ADD CONSTRAINT `usuarios_escolaId_escolas_id_fk` FOREIGN KEY (`escolaId`) REFERENCES `escolas`(`id`) ON DELETE no action ON UPDATE no action;

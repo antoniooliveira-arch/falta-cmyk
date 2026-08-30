@@ -1,0 +1,1 @@
+ALTER TABLE `usuarios` ADD CONSTRAINT `usuarios_perfil_escola_check` CHECK (perfil = 'ADMIN' OR escolaId IS NOT NULL);

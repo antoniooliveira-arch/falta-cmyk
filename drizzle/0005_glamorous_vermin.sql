@@ -1,0 +1,1 @@
+ALTER TABLE `faltas` ADD `envioId` int;
