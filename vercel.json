@@ -1,19 +1,12 @@
 {
-  "buildCommand": "pnpm run build:client",
-  "outputDirectory": "dist/public",
-  "framework": "vite",
-  "rewrites": [
-    {
-      "source": "/api/trpc/(.*)",
-      "destination": "/api/trpc"
-    },
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "installCommand": "npm install",
+  "devCommand": "npm run dev",
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://jsfjquxytmbvfhundecn.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzZmpxdXh5dG1idmZodW5kZWNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDg4NzksImV4cCI6MjA3MjIyNDg3OX0.4J6Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q3Q",
+    "SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzZmpxdXh5dG1idmZodW5kZWNuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4ODEwNDg5OCwiZXhwIjoyMTAzNjgwODk4fQ.Q4m6N3PPJBzrmCRkBy11U0Xx5uxPTRctjDZMFmxawRM"
+  }
 }
