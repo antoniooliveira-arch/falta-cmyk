@@ -16,6 +16,7 @@ import { supabaseSchema } from '@/lib/schema-sql'
 export default function ConfiguracoesPage() {
   const { user } = useAuth()
   const [tabs, setTabs] = useState<'geral' | 'seguranca' | 'banco' | 'backup'>('geral')
+  const [importEnabled, setImportEnabled] = useState(true)
 
   const handleTabChange = (tab: 'geral' | 'seguranca' | 'banco' | 'backup') => {
     setTabs(tab)
@@ -110,6 +111,31 @@ export default function ConfiguracoesPage() {
                 </div>
               </div>
               <Button>Salvar Configurações</Button>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Importação de Alunos</CardTitle>
+              <CardDescription>Configurações de importação de alunos por PDF</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Importação de Alunos Habilitada</Label>
+                <Select
+                  defaultValue={importEnabled}
+                  onValueChange={setImportEnabled}
+                >
+                  <option value="true">Sim - Permitir importação</option>
+                  <option value="false">Não - Desabilitar importação</option>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label> Escola para Importação</Label>
+                <p className="text-sm text-muted-foreground">
+                  A importação de alunos será direcionada apenas para a escola selecionada no
+                  momento do processamento do PDF.
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
