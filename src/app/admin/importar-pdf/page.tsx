@@ -77,7 +77,8 @@ export default function ImportarPDFPage() {
       setExtractedStudents(students)
       setShowPreview(true)
     } catch (err) {
-      setError('Erro ao processar o PDF: ' + (err as Error).message)
+      // Tratamento de erro amigável - não mostro erro técnico ao usuário
+      setError('Não foi possível processar este PDF. Verifique o arquivo e tente novamente.')
     } finally {
       setExtracting(false)
     }
@@ -112,15 +113,16 @@ export default function ImportarPDFPage() {
 
       if (error) throw error
 
-      alert(`${validStudents.length} aluno(s) importado(s) com sucesso!`)
       setExtractedStudents([])
       setPdfFile(null)
       setShowPreview(false)
       const fileInput = document.getElementById('pdf-file') as HTMLInputElement
       if (fileInput) fileInput.value = ''
+      setImporting(false)
+      // Success notification - would normally use toast or similar
+      // alert(`${validStudents.length} aluno(s) importado(s) com sucesso!`)
     } catch (err) {
-      setError('Erro ao importar alunos: ' + (err as Error).message)
-    } finally {
+      setError('Ocorreu um erro ao processar o PDF. Tente novamente.')
       setImporting(false)
     }
   }
@@ -131,6 +133,11 @@ export default function ImportarPDFPage() {
   }
 
   const selectedSchool = schools.find(s => s.id === selectedSchoolId)
+
+  // Calculate progress state
+  const hasSchool = !!selectedSchoolId
+  const hasPdf = !!pdfFile
+  const canProcess = hasSchool && hasPdf && !extracting
 
   return (
     <div className="space-y-6">
@@ -145,11 +152,11 @@ export default function ImportarPDFPage() {
       <Card>
         <CardHeader>
           <CardTitle>Configuração da Importação</CardTitle>
-          <CardDescription>Selecione a escola e o arquivo PDF com os dados dos alunos</CardDescription>
+          <CardDescription>Selecione a escola que receberá a implantação e envie o PDF com os dados dos alunos.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-<div className="space-y-2">
+            <div className="space-y-2">
               <Label htmlFor="school">Escola *</Label>
               <Select
                 id="school"
@@ -176,9 +183,14 @@ export default function ImportarPDFPage() {
                   Cadastrar escolas no painel Admin → Escolas para habilitar a importação
                 </p>
               )}
-              {pdfFile && (
+              {pdfFile && !selectedSchoolId && (
                 <p className="text-xs text-warning mt-1">
-                  Selecione a escola antes de processar o PDF
+                  Selecione uma escola antes de continuar
+                </p>
+              )}
+              {selectedSchoolId && (
+                <p className="text-xs text-success mt-1">
+                  Escola selecionada: {selectedSchool.name}
                 </p>
               )}
             </div>
@@ -217,6 +229,16 @@ export default function ImportarPDFPage() {
                   </div>
                 )}
               </div>
+              {pdfFile && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Clique ou arraste o arquivo PDF aqui
+                </p>
+              )}
+              {(!pdfFile || extracting) && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Anexe um arquivo PDF para continuar
+                </p>
+              )}
             </div>
           </div>
 
@@ -259,7 +281,7 @@ export default function ImportarPDFPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Alunos Identificados no PDF ({extractedStudents.length})</CardTitle>
+              <CardTitle>Pré-visualização da Importação</CardTitle>
               <Badge variant={extractedStudents.some(s => s.needs_review) ? 'warning' : 'success'}>
                 {extractedStudents.filter(s => s.needs_review).length} precisam de revisão
               </Badge>
@@ -275,10 +297,10 @@ export default function ImportarPDFPage() {
                   <TableRow>
                     <TableHead className="w-10">Status</TableHead>
                     <TableHead>Nome</TableHead>
-                    <TableHead>Responsável</TableHead>
+                    <TableHead>Matrícula</TableHead>
                     <TableHead>Turma</TableHead>
-                    <TableHead>Fone 1</TableHead>
-                    <TableHead>Fone 2</TableHead>
+                    <TableHead>Série</TableHead>
+                    <TableHead>Situação</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -291,7 +313,9 @@ export default function ImportarPDFPage() {
                         <Badge variant="secondary">{student.class}</Badge>
                       </TableCell>
                       <TableCell>{student.phone1 || '-'}</TableCell>
-                      <TableCell>{student.phone2 || '-'}</TableCell>
+                      <TableCell>
+                        {student.needs_review ? '⚠ Revisão necessária' : 'Ok'}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -333,12 +357,12 @@ export default function ImportarPDFPage() {
                 ) : (
                   <>
                     <CheckCircle className="h-4 w-4 mr-2" />
-                    Confirmar Importação ({extractedStudents.filter(s => !s.needs_review).length})
+                    Confirmar Implantação ({extractedStudents.filter(s => !s.needs_review).length})
                   </>
                 )}
               </Button>
             </div>
-          </CardContent>
+          </Card>
         </Card>
       )}
 
