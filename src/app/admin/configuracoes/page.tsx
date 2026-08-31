@@ -12,6 +12,7 @@ import { Select } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Shield, Key, Database, Download, Upload, RefreshCw, Settings, AlertTriangle, CheckCircle, Upload as UploadIcon } from 'lucide-react'
 import { supabaseSchema } from '@/lib/schema-sql'
+import { School } from '@/types/database'
 
 export default function ConfiguracoesPage() {
   const { user } = useAuth()
