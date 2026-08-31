@@ -41,6 +41,7 @@ export default function ImportarPDFPage() {
       setSchools(data || [])
     } catch (error) {
       console.error('Error fetching schools:', error)
+      setSchools([]) // Garante que o estado seja limpo em caso de erro
     }
   }
 
@@ -148,7 +149,7 @@ export default function ImportarPDFPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
+<div className="space-y-2">
               <Label htmlFor="school">Escola *</Label>
               <Select
                 id="school"
@@ -157,10 +158,23 @@ export default function ImportarPDFPage() {
                 required
               >
                 <option value="">Selecione a escola</option>
-                {schools.map(school => (
-                  <option key={school.id} value={school.id}>{school.name}</option>
-                ))}
+                {schools.length > 0 ? (
+                  schools.map(school => (
+                    <option key={school.id} value={school.id}>
+                      {school.name}
+                    </option>
+                  ))
+                ) : (
+                  <option disabled>
+                    Nenhuma escola cadastrada ativa no momento
+                  </option>
+                )}
               </Select>
+              {schools.length === 0 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Cadastrar escolas no painel Admin → Escolas para habilitar a importação
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
