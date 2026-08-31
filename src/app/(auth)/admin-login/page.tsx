@@ -42,8 +42,6 @@ export default function AdminLoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
       <div className="text-center mb-6 bg-card border-b border-border">
-        <h1 className="text-3xl font-bold text-primary">Acesso Administrativo</h1>
-        <p className="text-muted-foreground">Painel de controle do administrador</p>
       </div>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
