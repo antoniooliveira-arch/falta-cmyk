@@ -17,6 +17,27 @@ export default function ConfiguracoesPage() {
   const { user } = useAuth()
   const [tabs, setTabs] = useState<'geral' | 'seguranca' | 'banco' | 'backup'>('geral')
   const [importEnabled, setImportEnabled] = useState(true)
+  const [schools, setSchools] = useState<School[]>([])
+  const [selectedSchoolId, setSelectedSchoolId] = useState('')
+
+  const fetchSchools = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('schools')
+        .select('*')
+        .eq('active', true)
+        .order('name')
+
+      if (error) throw error
+      setSchools(data || [])
+    } catch (err) {
+      console.error('Error fetching schools:', err)
+    }
+  }
+
+  useEffect(() => {
+    fetchSchools()
+  }, [])
 
   const handleTabChange = (tab: 'geral' | 'seguranca' | 'banco' | 'backup') => {
     setTabs(tab)
@@ -130,7 +151,19 @@ export default function ConfiguracoesPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label> Escola para Importação</Label>
+                <Label>Escola para Importação</Label>
+                <Select
+                  value={selectedSchoolId}
+                  onValueChange={setSelectedSchoolId}
+                  disabled={importEnabled === false}
+                >
+                  <option value="">Selecione a escola</option>
+                  {schools.map(school => (
+                    <option key={school.id} value={school.id}>
+                      {school.name}
+                    </option>
+                  ))}
+                </Select>
                 <p className="text-sm text-muted-foreground">
                   A importação de alunos será direcionada apenas para a escola selecionada no
                   momento do processamento do PDF.
