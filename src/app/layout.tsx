@@ -23,6 +23,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <AuthProvider>{children}</AuthProvider>
+        <footer className="mt-auto border-t border-border p-4 text-center text-[10px] text-muted-foreground">
+          Desenvolvido pelo Departamento de Tecnologia da SME
+        </footer>
       </body>
     </html>
   );

@@ -232,7 +232,7 @@ export default function UsuariosPage() {
           </div>
           <p className="text-sm text-muted-foreground mt-3">
             O usuário administrador é criado automaticamente na configuração inicial do Supabase.
-            Email: <code className="bg-muted px-1 rounded">admin@sistema.com</code> | Senha inicial: <code className="bg-muted px-1 rounded">admin123</code>
+            Email: <code className="bg-muted px-1 rounded">admin@sistema.com</code>
           </p>
         </CardContent>
       </Card>

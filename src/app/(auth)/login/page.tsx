@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { Button } from '@/components/ui/button'
@@ -20,6 +20,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [schools, setSchools] = useState<School[]>([])
   const [schoolsLoading, setSchoolsLoading] = useState(true)
+
+  useEffect(() => {
+    fetchSchools()
+  }, [])
 
   const supabase = createClient()
 
@@ -80,6 +84,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
+      <div className="text-center mb-6 bg-card border-b border-border">
+        <h1 className="text-3xl font-bold text-primary">Sistema de Gestão de Faltas</h1>
+        <p className="text-muted-foreground">Controle de faltas escolares</p>
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Sistema de Gestão de Faltas</CardTitle>

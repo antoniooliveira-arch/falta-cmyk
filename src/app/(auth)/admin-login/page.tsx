@@ -41,6 +41,11 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
+      <div className="text-center mb-6 bg-card border-b border-border">
+        <img src="/rotulo.jpg" alt="Logo do Sistema" className="h-10 w-auto mb-3" />
+        <h1 className="text-3xl font-bold text-primary">Acesso Administrativo</h1>
+        <p className="text-muted-foreground">Painel de controle do administrador</p>
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Acesso Administrativo</CardTitle>
@@ -87,9 +92,6 @@ export default function AdminLoginPage() {
 
           <div className="mt-6 pt-4 border-t">
             <p className="text-xs text-muted-foreground text-center">
-              Senha inicial: <strong>admin123</strong>
-            </p>
-            <p className="text-xs text-muted-foreground text-center mt-1">
               <a href="/login" className="text-primary hover:underline">
                 Voltar para login da escola
               </a>
