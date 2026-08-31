@@ -155,6 +155,7 @@ export default function ImportarPDFPage() {
                 id="school"
                 value={selectedSchoolId}
                 onValueChange={setSelectedSchoolId}
+                disabled={!pdfFile}
                 required
               >
                 <option value="">Selecione a escola</option>
@@ -173,6 +174,11 @@ export default function ImportarPDFPage() {
               {schools.length === 0 && (
                 <p className="text-xs text-muted-foreground mt-1">
                   Cadastrar escolas no painel Admin → Escolas para habilitar a importação
+                </p>
+              )}
+              {pdfFile && (
+                <p className="text-xs text-warning mt-1">
+                  Selecione a escola antes de processar o PDF
                 </p>
               )}
             </div>
