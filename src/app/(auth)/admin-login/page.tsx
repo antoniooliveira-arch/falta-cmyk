@@ -41,9 +41,6 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
-      <div className="text-center mb-6 bg-card border-b border-border">
-        <img src="/globe.svg" alt="Ícone do Sistema" className="h-6 w-auto mb-2" />
-      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Acesso Administrativo</CardTitle>
