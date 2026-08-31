@@ -21,6 +21,7 @@ export default function EscolasPage() {
   const [editingSchool, setEditingSchool] = useState<School | null>(null)
   const [formData, setFormData] = useState({ name: '', password: '' })
   const [submitting, setSubmitting] = useState(false)
+  const [toggleAllLoading, setToggleAllLoading] = useState(false)
 
   const supabase = createClient()
 
@@ -37,6 +38,30 @@ export default function EscolasPage() {
       console.error('Error fetching schools:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleToggleAllSchools = async () => {
+    setToggleAllLoading(true)
+    try {
+      // First fetch current schools
+      await fetchSchools()
+      
+      // Enable all schools
+      const { error: toggleError } = await supabase
+        .from('schools')
+        .update({ active: true })
+      
+      if (toggleError) throw toggleError
+      
+      // Refresh the list
+      await fetchSchools()
+      alert('Todas as escolas foram ativadas com sucesso!')
+    } catch (error) {
+      console.error('Error activating schools:', error)
+      alert('Erro ao ativar escolas')
+    } finally {
+      setToggleAllLoading(false)
     }
   }
 
@@ -129,6 +154,24 @@ export default function EscolasPage() {
         <Button onClick={() => handleOpenModal()}>
           <Plus className="h-4 w-4 mr-2" />
           Nova Escola
+        </Button>
+        <Button
+          variant="default"
+          onClick={handleToggleAllSchools}
+          disabled={toggleAllLoading}
+          className="mr-2"
+        >
+          {toggleAllLoading ? (
+            <>
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              Ativando...
+            </>
+          ) : (
+            <>
+              <Eye className="h-4 w-4 mr-2" />
+              Ativar Todas
+            </>
+          )}
         </Button>
       </div>
 
