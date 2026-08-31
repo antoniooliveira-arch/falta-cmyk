@@ -38,10 +38,10 @@ export default function ImportarPDFPage() {
         .order('name')
 
       if (error) throw error
-      setSchools(data || [])
+      setSchools(data ? data : [])
     } catch (error) {
       console.error('Error fetching schools:', error)
-      setSchools([]) // Garante que o estado seja limpo em caso de erro
+      setSchools([])
     }
   }
 
