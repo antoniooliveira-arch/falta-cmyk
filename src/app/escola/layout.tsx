@@ -6,7 +6,6 @@ import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
 import {
   LayoutDashboard,
@@ -95,10 +94,15 @@ export default function EscolaLayout({ children }: { children: React.ReactNode }
             </Link>
             <span className="text-sm font-semibold text-primary">{user.school_name}</span>
           </div>
-          <div className="flex items-center gap-4">
-            <Badge variant="secondary" className="text-xs">
-              {user.role === 'admin' ? 'Administrador' : 'Escola'}
-            </Badge>
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground leading-none">
+                {user.role === 'admin' ? 'Administrador' : 'Escola logada'}
+              </p>
+              <p className="text-sm font-bold text-primary leading-tight max-w-[220px] truncate">
+                {user.school_name || '—'}
+              </p>
+            </div>
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-1" />
               Sair
