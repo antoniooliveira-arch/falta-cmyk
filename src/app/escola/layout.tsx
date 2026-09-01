@@ -93,7 +93,7 @@ export default function EscolaLayout({ children }: { children: React.ReactNode }
             <Link href="/escola/dashboard" className="font-bold text-xl text-primary">
               Sistema de Faltas
             </Link>
-            <span className="text-sm text-muted-foreground">{user.school_name}</span>
+            <span className="text-sm font-semibold text-primary">{user.school_name}</span>
           </div>
           <div className="flex items-center gap-4">
             <Badge variant="secondary" className="text-xs">
