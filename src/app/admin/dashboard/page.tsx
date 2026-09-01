@@ -1,13 +1,64 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth-context'
+import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
-import { Building, Users, ClipboardList, FileText, UserCog, Settings, Search, Filter, Plus, TrendingUp } from 'lucide-react'
+import { Building, Users, ClipboardList, FileText, UserCog, Settings, Search, Filter, Plus, TrendingUp, AlertTriangle } from 'lucide-react'
 
 export default function AdminDashboardPage() {
   const { user } = useAuth()
+  const [alerts, setAlerts] = useState<{ name: string; responsible: string; class: string; school: string; total: number }[]>([])
+  const [alertsLoading, setAlertsLoading] = useState(true)
+
+  const supabase = createClient()
+
+  const fetchAlerts = async () => {
+    try {
+      const since = new Date()
+      since.setDate(since.getDate() - 30)
+      const { data, error } = await supabase
+        .from('absences')
+        .select('student_id, students(id, name, responsible, class, schools(name))')
+        .gte('absence_date', since.toISOString().split('T')[0])
+        .in('status', ['ENVIADA', 'VISUALIZADA', 'REGISTRADA'])
+
+      if (error) throw error
+
+      const countByStudent = new Map<string, { total: number; name: string; responsible: string; class: string; school: string }>()
+      ;(data || []).forEach((row: any) => {
+        const student = row.students as any
+        if (!student) return
+        const cur = countByStudent.get(row.student_id) || {
+          total: 0,
+          name: student.name,
+          responsible: student.responsible,
+          class: student.class,
+          school: student.schools?.name || '—'
+        }
+        cur.total += 1
+        countByStudent.set(row.student_id, cur)
+      })
+
+      const alertList = Array.from(countByStudent.values())
+        .filter(a => a.total >= 3)
+        .sort((a, b) => b.total - a.total)
+        .map(({ total, name, responsible, class: cls, school }) => ({ total, name, responsible, class: cls, school }))
+
+      setAlerts(alertList)
+    } catch (error) {
+      console.error('Error fetching alerts:', error)
+    } finally {
+      setAlertsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchAlerts()
+  }, [])
 
   const actions = [
     {
@@ -142,6 +193,45 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-amber-400 bg-amber-50/50">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-amber-700">
+            <AlertTriangle className="h-5 w-5" />
+            Alunos com 3 ou mais faltas (últimos 30 dias / todas as escolas)
+          </CardTitle>
+          <Badge variant="secondary">{alerts.length}</Badge>
+        </CardHeader>
+        <CardContent>
+          {alertsLoading ? (
+            <div className="flex justify-center py-6">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+            </div>
+          ) : alerts.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-2">
+              Nenhum aluno atingiu 3 faltas nos últimos 30 dias.
+            </p>
+          ) : (
+            <ul className="space-y-3">
+              {alerts.map((alert, index) => (
+                <li key={index} className="flex items-center justify-between gap-3 p-3 bg-white rounded-lg border">
+                  <div>
+                    <p className="font-medium">{alert.name}</p>
+                    <p className="text-sm text-muted-foreground">Responsável: {alert.responsible}</p>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <Badge variant="secondary">{alert.school}</Badge>
+                    <Badge variant="secondary">{alert.class}</Badge>
+                    <Badge className="bg-amber-500 text-white">
+                      {alert.total} falta{alert.total > 1 ? 's' : ''}
+                    </Badge>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
