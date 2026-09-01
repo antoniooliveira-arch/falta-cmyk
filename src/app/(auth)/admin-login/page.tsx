@@ -40,14 +40,14 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-100 via-slate-50 to-blue-200 p-4">
-      <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-indigo-300/40 blur-3xl" />
-      <div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-blue-300/40 blur-3xl" />
-      <div className="absolute top-1/4 left-1/4 h-72 w-72 rounded-full bg-slate-300/40 blur-2xl" />
-      <div className="absolute bottom-1/3 right-1/4 h-72 w-72 rounded-full bg-violet-300/50 blur-2xl" />
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-50 via-slate-50 to-blue-50 p-4">
+      <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-indigo-200/30 blur-3xl" />
+      <div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-blue-200/30 blur-3xl" />
+      <div className="absolute top-1/4 left-1/4 h-72 w-72 rounded-full bg-slate-200/30 blur-2xl" />
+      <div className="absolute bottom-1/3 right-1/4 h-72 w-72 rounded-full bg-violet-200/40 blur-2xl" />
       <Card className="relative w-full max-w-md shadow-2xl border-0 border-primary/10">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+          <CardTitle className="text-2xl bg-gradient-to-r from-indigo-500 to-blue-500 bg-clip-text text-transparent">
             Acesso Administrativo
           </CardTitle>
           <CardDescription>Login do administrador do sistema</CardDescription>

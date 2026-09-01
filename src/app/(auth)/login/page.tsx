@@ -83,14 +83,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-100 via-indigo-50 to-sky-200 p-4">
-      <div className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-blue-300/40 blur-3xl" />
-      <div className="absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-indigo-300/40 blur-3xl" />
-      <div className="absolute top-1/3 right-1/4 h-72 w-72 rounded-full bg-sky-200/60 blur-2xl" />
-      <div className="absolute bottom-1/4 left-1/4 h-72 w-72 rounded-full bg-violet-200/50 blur-2xl" />
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-slate-50 to-sky-50 p-4">
+      <div className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-blue-200/30 blur-3xl" />
+      <div className="absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-indigo-200/30 blur-3xl" />
+      <div className="absolute top-1/3 right-1/4 h-72 w-72 rounded-full bg-sky-100/50 blur-2xl" />
+      <div className="absolute bottom-1/4 left-1/4 h-72 w-72 rounded-full bg-violet-100/40 blur-2xl" />
       <Card className="relative w-full max-w-md shadow-2xl border-0 border-primary/10">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <CardTitle className="text-2xl bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">
             Sistema de Gestão de Faltas
           </CardTitle>
           <CardDescription>Faça login para acessar o sistema</CardDescription>
