@@ -12,7 +12,7 @@ import { Select } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { FileText, Upload, Eye, AlertCircle, CheckCircle, XCircle, RefreshCw, School as SchoolIcon } from 'lucide-react'
-import { parsePDF, PDFStudentData } from '@/lib/pdf-parser'
+import { parseExcel, PDFStudentData } from '@/lib/excel-parser'
 import { generateSchoolCode } from '@/lib/utils'
 
 export default function ImportarPDFPage() {
@@ -52,8 +52,10 @@ export default function ImportarPDFPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      if (file.type !== 'application/x-exe') {
-        setError('Por favor, selecione um arquivo EXE')
+      const validExtensions = ['.xlsx', '.xls']
+      const ext = '.' + file.name.split('.').pop()?.toLowerCase()
+      if (!validExtensions.includes(ext)) {
+        setError('Por favor, selecione um arquivo Excel (.xlsx ou .xls)')
         return
       }
       setPdfFile(file)
@@ -65,7 +67,7 @@ export default function ImportarPDFPage() {
 
   const handleExtract = async () => {
     if (!pdfFile) {
-      setError('Selecione um arquivo PDF primeiro')
+      setError('Selecione um arquivo Excel primeiro')
       return
     }
 
@@ -73,12 +75,11 @@ export default function ImportarPDFPage() {
     setError('')
 
     try {
-      const students = await parsePDF(pdfFile)
+      const students = await parseExcel(pdfFile)
       setExtractedStudents(students)
       setShowPreview(true)
     } catch (err) {
-      // Tratamento de erro amigável - não mostro erro técnico ao usuário
-      setError('Não foi possível processar este PDF. Verifique o arquivo e tente novamente.')
+      setError('Não foi possível processar este arquivo. Verifique o formato e tente novamente.')
     } finally {
       setExtracting(false)
     }
@@ -116,13 +117,13 @@ export default function ImportarPDFPage() {
       setExtractedStudents([])
       setPdfFile(null)
       setShowPreview(false)
-      const fileInput = document.getElementById('pdf-file') as HTMLInputElement
+      const fileInput = document.getElementById('excel-file') as HTMLInputElement
       if (fileInput) fileInput.value = ''
       setImporting(false)
       // Success notification - would normally use toast or similar
       // alert(`${validStudents.length} aluno(s) importado(s) com sucesso!`)
     } catch (err) {
-      setError('Ocorreu um erro ao processar o PDF. Tente novamente.')
+      setError('Ocorreu um erro ao processar o arquivo. Tente novamente.')
       setImporting(false)
     }
   }
@@ -144,15 +145,15 @@ export default function ImportarPDFPage() {
       <div>
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <FileText className="h-8 w-8" />
-          Importar Alunos por PDF
+          Importar Alunos por Excel
         </h1>
-        <p className="text-muted-foreground">Importe alunos em lote a partir de arquivos PDF</p>
+        <p className="text-muted-foreground">Importe alunos em lote a partir de planilhas Excel</p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Configuração da Importação</CardTitle>
-          <CardDescription>Selecione a escola que receberá a implantação e envie o PDF com os dados dos alunos.</CardDescription>
+          <CardDescription>Selecione a escola que receberá a implantação e envie a planilha Excel com os dados dos alunos.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -196,21 +197,21 @@ export default function ImportarPDFPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Arquivo PDF *</Label>
+              <Label>Planilha Excel *</Label>
               <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors">
                 <input
-                  id="pdf-file"
+                  id="excel-file"
                   type="file"
-                  accept=".exe"
+                  accept=".xlsx,.xls"
                   onChange={handleFileChange}
                   className="hidden"
                 />
-                <label htmlFor="pdf-file" className="cursor-pointer">
+                <label htmlFor="excel-file" className="cursor-pointer">
                   <div className="flex flex-col items-center gap-3">
                     <Upload className="h-12 w-12 text-muted-foreground" />
                     <div>
-                      <p className="font-medium">Clique ou arraste o arquivo PDF aqui</p>
-                      <p className="text-sm text-muted-foreground">Apenas arquivos .exe</p>
+                      <p className="font-medium">Clique ou arraste a planilha Excel aqui</p>
+                      <p className="text-sm text-muted-foreground">Apenas arquivos .xlsx ou .xls</p>
                     </div>
                   </div>
                 </label>
@@ -231,12 +232,12 @@ export default function ImportarPDFPage() {
               </div>
               {pdfFile && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Clique ou arraste o arquivo EXE aqui
+                  Clique ou arraste a planilha Excel aqui
                 </p>
               )}
               {(!pdfFile || extracting) && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Anexe um arquivo EXE para continuar
+                  Anexe uma planilha Excel para continuar
                 </p>
               )}
             </div>
@@ -331,7 +332,7 @@ export default function ImportarPDFPage() {
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Alunos com dados incompletos ou inválidos não serão importados. 
-                  Corrija o PDF ou cadastre manualmente.
+                  Corrija a planilha ou cadastre manualmente.
                 </p>
               </div>
             )}
@@ -368,11 +369,11 @@ export default function ImportarPDFPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Formato Esperado do EXE</CardTitle>
+          <CardTitle>Formato Esperado da Planilha</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            O sistema tenta extrair automaticamente os seguintes campos do EXE:
+            O sistema extrai automaticamente os seguintes campos da planilha:
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div className="p-3 bg-muted rounded">
@@ -397,12 +398,12 @@ export default function ImportarPDFPage() {
             </div>
           </div>
           <div className="mt-4 p-3 bg-muted rounded">
-            <p className="font-medium mb-2">Exemplo de formato tabular suportado:</p>
+            <p className="font-medium mb-2">Exemplo de planilha esperada:</p>
             <pre className="text-xs overflow-x-auto bg-background p-2 rounded">
-{`NOME             RESPONSÁVEL       TURMA    FONE 1       FONE 2
-João da Silva    Maria da Silva     3A       99999-1111   99999-2222
-Ana Souza        Carlos Souza       3A       99999-3333   99999-4444
-Pedro Santos     João Santos        3B       99999-5555   99999-6666`}
+{`| NOME             | RESPONSÁVEL       | TURMA | FONE 1       | FONE 2       |
+| João da Silva    | Maria da Silva    | 3A    | 99999-1111   | 99999-2222   |
+| Ana Souza        | Carlos Souza      | 3A    | 99999-3333   | 99999-4444   |
+| Pedro Santos     | João Santos       | 3B    | 99999-5555   | 99999-6666   |`}
             </pre>
           </div>
         </CardContent>
