@@ -20,7 +20,7 @@ export default function FaltasPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [classFilter, setClassFilter] = useState('')
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+  const [selectedStudents, setSelectedStudents] = useState<Student[]>([])
   const [absenceDate, setAbsenceDate] = useState(new Date().toISOString().split('T')[0])
   const [observation, setObservation] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -69,26 +69,26 @@ export default function FaltasPage() {
 
   const handleRegisterAbsence = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedStudent || !user?.school_id) return
+    if (selectedStudents.length === 0 || !user?.school_id) return
 
     setSubmitting(true)
 
     try {
       const { error } = await supabase
         .from('absences')
-        .insert({
-          student_id: selectedStudent.id,
+        .insert(selectedStudents.map(student => ({
+          student_id: student.id,
           school_id: user.school_id,
           absence_date: absenceDate,
           observation: observation || null,
           registered_by: user.id,
           status: 'ENVIADA'
-        })
+        })))
 
       if (error) throw error
 
       setSuccess(true)
-      setSelectedStudent(null)
+      setSelectedStudents([])
       setObservation('')
       setAbsenceDate(new Date().toISOString().split('T')[0])
     } catch (error) {
@@ -99,8 +99,12 @@ export default function FaltasPage() {
     }
   }
 
-  const handleSelectStudent = (student: Student) => {
-    setSelectedStudent(student)
+  const toggleSelectStudent = (student: Student) => {
+    setSelectedStudents(prev =>
+      prev.some(s => s.id === student.id)
+        ? prev.filter(s => s.id !== student.id)
+        : [...prev, student]
+    )
     setSuccess(false)
   }
 
@@ -195,8 +199,8 @@ export default function FaltasPage() {
                           <StudentRow
                             key={student.id}
                             student={student}
-                            selectedStudent={selectedStudent}
-                            onSelect={handleSelectStudent}
+                            isSelected={selectedStudents.some(s => s.id === student.id)}
+                            onToggle={toggleSelectStudent}
                           />
                         ))}
                       </Fragment>
@@ -206,8 +210,8 @@ export default function FaltasPage() {
                       <StudentRow
                         key={student.id}
                         student={student}
-                        selectedStudent={selectedStudent}
-                        onSelect={handleSelectStudent}
+                        isSelected={selectedStudents.some(s => s.id === student.id)}
+                        onToggle={toggleSelectStudent}
                       />
                     ))
                   )}
@@ -218,32 +222,31 @@ export default function FaltasPage() {
         </CardContent>
       </Card>
 
-      {selectedStudent && (
+      {selectedStudents.length > 0 && (
         <Card>
-          <CardHeader>
+          <CardHeader className="bg-gradient-to-r from-primary to-blue-500 text-primary-foreground rounded-t-lg">
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
-              Registrar Falta - {selectedStudent.name}
+              Registrar Faltas ({selectedStudents.length} aluno{selectedStudents.length > 1 ? 's' : ''})
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-muted/50 rounded-lg">
-              <div>
-                <p className="text-sm text-muted-foreground">Responsável</p>
-                <p className="font-medium">{selectedStudent.responsible}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Turma</p>
-                <p className="font-medium">{selectedStudent.class}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Fone 1</p>
-                <p className="font-medium">{selectedStudent.phone1}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Fone 2</p>
-                <p className="font-medium">{selectedStudent.phone2 || 'Não informado'}</p>
-              </div>
+          <CardContent className="pt-6">
+            <div className="mb-6 p-4 bg-muted/50 rounded-lg space-y-2">
+              {selectedStudents.map(student => (
+                <div key={student.id} className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="font-medium">{student.name}</p>
+                    <p className="text-sm text-muted-foreground">{student.class} • {student.responsible}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleSelectStudent(student)}
+                  >
+                    Remover
+                  </Button>
+                </div>
+              ))}
             </div>
 
             <form onSubmit={handleRegisterAbsence} className="space-y-4">
@@ -270,11 +273,11 @@ export default function FaltasPage() {
               </div>
 
               <div className="flex gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setSelectedStudent(null)} className="flex-1">
+                <Button type="button" variant="outline" onClick={() => setSelectedStudents([])} className="flex-1">
                   Cancelar
                 </Button>
                 <Button type="submit" className="flex-1" disabled={submitting}>
-                  {submitting ? 'Enviando...' : 'ENVIAR PARA ADMINISTRADOR'}
+                  {submitting ? 'Enviando...' : `ENVIAR (${selectedStudents.length}) PARA ADMINISTRADOR`}
                 </Button>
               </div>
             </form>
@@ -285,14 +288,24 @@ export default function FaltasPage() {
   )
 }
 
-function StudentRow({ student, selectedStudent, onSelect }: {
+function StudentRow({ student, isSelected, onToggle }: {
   student: Student
-  selectedStudent: Student | null
-  onSelect: (student: Student) => void
+  isSelected: boolean
+  onToggle: (student: Student) => void
 }) {
   return (
-    <TableRow>
-      <TableCell className="font-medium">{student.name}</TableCell>
+    <TableRow className={isSelected ? 'bg-primary/5' : undefined}>
+      <TableCell className="font-medium">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => onToggle(student)}
+            className="h-4 w-4 rounded border-input accent-primary"
+          />
+          {student.name}
+        </label>
+      </TableCell>
       <TableCell>{student.responsible}</TableCell>
       <TableCell>
         <Badge variant="secondary">{student.class}</Badge>
@@ -302,16 +315,16 @@ function StudentRow({ student, selectedStudent, onSelect }: {
       <TableCell>
         <Button
           size="sm"
-          onClick={() => onSelect(student)}
-          disabled={selectedStudent?.id === student.id}
+          variant={isSelected ? 'default' : 'outline'}
+          onClick={() => onToggle(student)}
         >
-          {selectedStudent?.id === student.id ? (
+          {isSelected ? (
             <>
               <CheckCircle className="h-4 w-4 mr-1" />
               Selecionado
             </>
           ) : (
-            'Registrar'
+            'Selecionar'
           )}
         </Button>
       </TableCell>
