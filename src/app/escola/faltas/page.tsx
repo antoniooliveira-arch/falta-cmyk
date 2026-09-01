@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import { createClient } from '@/lib/supabase/client'
 import { Student, Absence } from '@/types/database'
@@ -61,6 +61,11 @@ export default function FaltasPage() {
     const getType = (c: string) => c.toLowerCase().includes('ber') ? 0 : c.toLowerCase().includes('maternal') ? 1 : 2
     return getType(a) - getType(b) || a.localeCompare(b, 'pt-BR', { numeric: true })
   })
+
+  const groupedStudents = classOptions
+    .map(cls => ({ cls, items: filteredStudents.filter(s => s.class === cls) }))
+    .filter(g => g.items.length > 0)
+  const showGrouping = !classFilter
 
   const handleRegisterAbsence = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -175,33 +180,35 @@ export default function FaltasPage() {
                         {classFilter ? `Nenhum aluno na turma ${classFilter}` : 'Nenhum aluno encontrado'}
                       </TableCell>
                     </TableRow>
+                  ) : showGrouping ? (
+                    groupedStudents.map(group => (
+                      <Fragment key={group.cls}>
+                        <TableRow className="bg-muted/50">
+                          <TableCell colSpan={6} className="py-2 font-semibold text-primary">
+                            {group.cls}
+                            <span className="ml-2 text-xs font-normal text-muted-foreground">
+                              ({group.items.length} alunos)
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                        {group.items.map(student => (
+                          <StudentRow
+                            key={student.id}
+                            student={student}
+                            selectedStudent={selectedStudent}
+                            onSelect={handleSelectStudent}
+                          />
+                        ))}
+                      </Fragment>
+                    ))
                   ) : (
                     filteredStudents.map(student => (
-                      <TableRow key={student.id}>
-                        <TableCell className="font-medium">{student.name}</TableCell>
-                        <TableCell>{student.responsible}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">{student.class}</Badge>
-                        </TableCell>
-                        <TableCell>{student.phone1}</TableCell>
-                        <TableCell>{student.phone2 || '-'}</TableCell>
-                        <TableCell>
-                          <Button
-                            size="sm"
-                            onClick={() => handleSelectStudent(student)}
-                            disabled={selectedStudent?.id === student.id}
-                          >
-                            {selectedStudent?.id === student.id ? (
-                              <>
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Selecionado
-                              </>
-                            ) : (
-                              'Registrar'
-                            )}
-                          </Button>
-                        </TableCell>
-                      </TableRow>
+                      <StudentRow
+                        key={student.id}
+                        student={student}
+                        selectedStudent={selectedStudent}
+                        onSelect={handleSelectStudent}
+                      />
                     ))
                   )}
                 </TableBody>
@@ -275,5 +282,39 @@ export default function FaltasPage() {
         </Card>
       )}
     </div>
+  )
+}
+
+function StudentRow({ student, selectedStudent, onSelect }: {
+  student: Student
+  selectedStudent: Student | null
+  onSelect: (student: Student) => void
+}) {
+  return (
+    <TableRow>
+      <TableCell className="font-medium">{student.name}</TableCell>
+      <TableCell>{student.responsible}</TableCell>
+      <TableCell>
+        <Badge variant="secondary">{student.class}</Badge>
+      </TableCell>
+      <TableCell>{student.phone1}</TableCell>
+      <TableCell>{student.phone2 || '-'}</TableCell>
+      <TableCell>
+        <Button
+          size="sm"
+          onClick={() => onSelect(student)}
+          disabled={selectedStudent?.id === student.id}
+        >
+          {selectedStudent?.id === student.id ? (
+            <>
+              <CheckCircle className="h-4 w-4 mr-1" />
+              Selecionado
+            </>
+          ) : (
+            'Registrar'
+          )}
+        </Button>
+      </TableCell>
+    </TableRow>
   )
 }
