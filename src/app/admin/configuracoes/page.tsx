@@ -17,9 +17,11 @@ import { School } from '@/types/database'
 export default function ConfiguracoesPage() {
   const { user } = useAuth()
   const [tabs, setTabs] = useState<'geral' | 'seguranca' | 'banco' | 'backup'>('geral')
-  const [importEnabled, setImportEnabled] = useState(true)
+  const [importEnabled, setImportEnabled] = useState<string>('true')
   const [schools, setSchools] = useState<School[]>([])
   const [selectedSchoolId, setSelectedSchoolId] = useState('')
+
+  const supabase = createClient()
 
   const fetchSchools = async () => {
     try {
@@ -144,7 +146,7 @@ export default function ConfiguracoesPage() {
               <div className="space-y-2">
                 <Label>Importação de Alunos Habilitada</Label>
                 <Select
-                  defaultValue={importEnabled}
+                  value={importEnabled}
                   onValueChange={setImportEnabled}
                 >
                   <option value="true">Sim - Permitir importação</option>
@@ -156,7 +158,7 @@ export default function ConfiguracoesPage() {
                 <Select
                   value={selectedSchoolId}
                   onValueChange={setSelectedSchoolId}
-                  disabled={importEnabled === false}
+                  disabled={importEnabled === 'false'}
                 >
                   <option value="">Selecione a escola</option>
                   {schools.map(school => (

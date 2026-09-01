@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Edit, Eye, Lock, Building } from 'lucide-react'
+import { Plus, Edit, Eye, Lock, Building, RefreshCw } from 'lucide-react'
 import { generateSchoolCode } from '@/lib/utils'
 
 export default function EscolasPage() {
