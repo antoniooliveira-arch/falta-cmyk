@@ -60,8 +60,11 @@ export default function FaltasAdminPage() {
     fetchData()
   }, [])
 
-  const classes = [...new Set(absences.map(a => (a.students as any)?.class).filter(Boolean))].sort()
-  const students = [...new Set(absences.map(a => (a.students as any)?.name).filter(Boolean))].sort()
+  const schoolAbsences = schoolFilter === 'TODAS'
+    ? absences
+    : absences.filter(a => (a.schools as any)?.id === schoolFilter)
+  const classes = [...new Set(schoolAbsences.map(a => (a.students as any)?.class).filter(Boolean))].sort()
+  const students = [...new Set(schoolAbsences.map(a => (a.students as any)?.name).filter(Boolean))].sort()
 
   const filteredAbsences = absences.filter(absence => {
     const student = absence.students as any
@@ -134,7 +137,11 @@ export default function FaltasAdminPage() {
             </div>
             <div className="space-y-2">
               <Label>Escola</Label>
-              <Select value={schoolFilter} onValueChange={setSchoolFilter}>
+              <Select value={schoolFilter} onValueChange={(v) => {
+                setSchoolFilter(v)
+                setClassFilter('')
+                setStudentFilter('')
+              }}>
                 <option value="TODAS">Todas as escolas</option>
                 {schools.map(school => (
                   <option key={school.id} value={school.id}>{school.name}</option>

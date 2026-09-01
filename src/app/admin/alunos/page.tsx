@@ -306,14 +306,14 @@ export default function AlunosAdminPage() {
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={handleCloseModal}>
-          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-gradient-to-b from-white via-indigo-50/20 to-blue-50/60 shadow-2xl border-2 border-primary/20" onClick={e => e.stopPropagation()}>
             <CardHeader className="bg-gradient-to-r from-primary to-blue-500 text-primary-foreground rounded-t-lg">
               <CardTitle>{editingStudent ? 'Editar Aluno' : 'Novo Aluno'}</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3 bg-white/60">
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="school_id">Escola *</Label>
+                <div className="rounded-lg bg-white p-3 shadow-sm border">
+                  <Label htmlFor="school_id" className="mb-1.5 block font-medium">Escola *</Label>
                   <Select value={formData.school_id} onValueChange={v => setFormData({ ...formData, school_id: v })} required>
                     <option value="">Selecione a escola</option>
                     {schools.map(school => (
@@ -321,8 +321,8 @@ export default function AlunosAdminPage() {
                     ))}
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nome *</Label>
+                <div className="rounded-lg bg-white p-3 shadow-sm border">
+                  <Label htmlFor="name" className="mb-1.5 block font-medium">Nome *</Label>
                   <Input
                     id="name"
                     value={formData.name}
@@ -331,8 +331,8 @@ export default function AlunosAdminPage() {
                     placeholder="Nome do aluno"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="responsible">Responsável *</Label>
+                <div className="rounded-lg bg-white p-3 shadow-sm border">
+                  <Label htmlFor="responsible" className="mb-1.5 block font-medium">Responsável *</Label>
                   <Input
                     id="responsible"
                     value={formData.responsible}
@@ -341,8 +341,8 @@ export default function AlunosAdminPage() {
                     placeholder="Nome do responsável"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="class">Turma *</Label>
+                <div className="rounded-lg bg-white p-3 shadow-sm border">
+                  <Label htmlFor="class" className="mb-1.5 block font-medium">Turma *</Label>
                   {classOption === '__custom__' ? (
                     <Input
                       id="class"
@@ -373,8 +373,8 @@ export default function AlunosAdminPage() {
                     </>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone1">Fone 1 *</Label>
+                <div className="rounded-lg bg-white p-3 shadow-sm border">
+                  <Label htmlFor="phone1" className="mb-1.5 block font-medium">Fone 1 *</Label>
                   <Input
                     id="phone1"
                     type="tel"
@@ -384,8 +384,8 @@ export default function AlunosAdminPage() {
                     placeholder="(99) 99999-9999"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone2">Fone 2</Label>
+                <div className="rounded-lg bg-white p-3 shadow-sm border">
+                  <Label htmlFor="phone2" className="mb-1.5 block font-medium">Fone 2</Label>
                   <Input
                     id="phone2"
                     type="tel"
