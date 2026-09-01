@@ -32,8 +32,8 @@ export default function AdminDashboardPage() {
       color: 'bg-purple-500'
     },
     {
-      name: 'Importar PDF',
-      description: 'Importar alunos em lote através de arquivos PDF',
+      name: 'Importar',
+      description: 'Importar alunos em lote através de planilhas Excel',
       href: '/admin/importar-pdf',
       icon: FileText,
       color: 'bg-orange-500'
@@ -57,7 +57,7 @@ export default function AdminDashboardPage() {
   const quickActions = [
     { name: 'Nova Escola', href: '/admin/escolas', icon: Plus, color: 'bg-blue-500' },
     { name: 'Novo Aluno', href: '/admin/alunos', icon: Users, color: 'bg-green-500' },
-    { name: 'Importar PDF', href: '/admin/importar-pdf', icon: FileText, color: 'bg-orange-500' },
+    { name: 'Importar', href: '/admin/importar-pdf', icon: FileText, color: 'bg-orange-500' },
     { name: 'Ver Faltas', href: '/admin/faltas', icon: ClipboardList, color: 'bg-purple-500' }
   ]
 

@@ -30,7 +30,7 @@ const navigation = [
   { name: 'Escolas', href: '/admin/escolas', icon: Building },
   { name: 'Alunos', href: '/admin/alunos', icon: Users },
   { name: 'Faltas', href: '/admin/faltas', icon: ClipboardList },
-  { name: 'Importar PDF', href: '/admin/importar-pdf', icon: FileText },
+  { name: 'Importar', href: '/admin/importar-pdf', icon: FileText },
   { name: 'Usuários', href: '/admin/usuarios', icon: UserCog },
   { name: 'Configurações', href: '/admin/configuracoes', icon: Settings },
 ]
