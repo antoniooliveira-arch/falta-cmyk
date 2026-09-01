@@ -90,7 +90,7 @@ export default function EscolaDashboardPage() {
     <div className="space-y-6">
       <div className="rounded-xl bg-gradient-to-r from-primary to-blue-500 p-6 text-primary-foreground shadow-lg">
         <p className="text-sm opacity-90">Você está logado na escola:</p>
-        <h1 className="text-3xl font-bold mt-1 break-words">{user?.school_name || 'Minha Escola'}</h1>
+        <h1 className="text-3xl font-bold mt-1 break-words">{user?.school_name}</h1>
         <p className="text-primary-foreground/90 mt-2">
           Gerencie as faltas dos seus alunos de forma simples e rápida.
         </p>
