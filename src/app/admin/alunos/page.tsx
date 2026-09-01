@@ -32,6 +32,8 @@ export default function AlunosAdminPage() {
     phone2: '',
     school_id: ''
   })
+  const [classOption, setClassOption] = useState('')
+  const [customClass, setCustomClass] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   const supabase = createClient()
@@ -81,17 +83,38 @@ export default function AlunosAdminPage() {
         phone2: student.phone2 || '',
         school_id: student.school_id
       })
+      const known = classes.includes(student.class)
+      setClassOption(known ? student.class : '__custom__')
+      setCustomClass(known ? '' : student.class)
     } else {
       setEditingStudent(null)
       setFormData({ name: '', responsible: '', class: '', phone1: '', phone2: '', school_id: '' })
+      setClassOption('')
+      setCustomClass('')
     }
     setShowModal(true)
+  }
+
+  const handleClassChange = (value: string) => {
+    setClassOption(value)
+    if (value === '__custom__') {
+      setFormData(prev => ({ ...prev, class: customClass }))
+    } else {
+      setFormData(prev => ({ ...prev, class: value }))
+    }
+  }
+
+  const handleCustomClassChange = (value: string) => {
+    setCustomClass(value)
+    setFormData(prev => ({ ...prev, class: value }))
   }
 
   const handleCloseModal = () => {
     setShowModal(false)
     setEditingStudent(null)
     setFormData({ name: '', responsible: '', class: '', phone1: '', phone2: '', school_id: '' })
+    setClassOption('')
+    setCustomClass('')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -320,13 +343,35 @@ export default function AlunosAdminPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="class">Turma *</Label>
-                  <Input
-                    id="class"
-                    value={formData.class}
-                    onChange={e => setFormData({ ...formData, class: e.target.value })}
-                    required
-                    placeholder="Ex: 3A, 4B, etc."
-                  />
+                  {classOption === '__custom__' ? (
+                    <Input
+                      id="class"
+                      value={customClass}
+                      onChange={e => handleCustomClassChange(e.target.value)}
+                      required
+                      placeholder="Digite o nome da nova turma"
+                    />
+                  ) : (
+                    <>
+                      <Select
+                        id="class"
+                        value={classOption}
+                        onValueChange={handleClassChange}
+                        required
+                      >
+                        <option value="" disabled>Selecione a turma</option>
+                        <option value="__custom__">+ Nova turma...</option>
+                        {classes.map(cls => (
+                          <option key={cls} value={cls}>{cls}</option>
+                        ))}
+                      </Select>
+                      {classOption && classOption !== '__custom__' && (
+                        <p className="text-xs text-muted-foreground">
+                          Quer outra turma? <button type="button" className="underline text-primary" onClick={() => handleClassChange('__custom__')}>digite manualmente</button>
+                        </p>
+                      )}
+                    </>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone1">Fone 1 *</Label>
