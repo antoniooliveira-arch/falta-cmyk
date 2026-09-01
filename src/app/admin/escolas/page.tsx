@@ -44,17 +44,13 @@ export default function EscolasPage() {
   const handleToggleAllSchools = async () => {
     setToggleAllLoading(true)
     try {
-      // First fetch current schools
-      await fetchSchools()
-      
-      // Enable all schools
       const { error: toggleError } = await supabase
         .from('schools')
         .update({ active: true })
-      
+        .eq('active', false)
+
       if (toggleError) throw toggleError
-      
-      // Refresh the list
+
       await fetchSchools()
       alert('Todas as escolas foram ativadas com sucesso!')
     } catch (error) {
