@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Search, Calendar, User, Phone, Mail, CheckCircle, AlertCircle } from 'lucide-react'
+import { Select } from '@/components/ui/select'
 import { formatDate } from '@/lib/utils'
 
 export default function FaltasPage() {
@@ -18,6 +19,7 @@ export default function FaltasPage() {
   const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [classFilter, setClassFilter] = useState('')
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [absenceDate, setAbsenceDate] = useState(new Date().toISOString().split('T')[0])
   const [observation, setObservation] = useState('')
@@ -50,10 +52,15 @@ export default function FaltasPage() {
   }, [user?.school_id])
 
   const filteredStudents = students.filter(student =>
-    student.name.toLowerCase().includes(search.toLowerCase()) ||
-    student.responsible.toLowerCase().includes(search.toLowerCase()) ||
-    student.class.toLowerCase().includes(search.toLowerCase())
+    (!classFilter || student.class === classFilter) &&
+    (student.name.toLowerCase().includes(search.toLowerCase()) ||
+    student.responsible.toLowerCase().includes(search.toLowerCase()))
   )
+
+  const classOptions = Array.from(new Set(students.map(s => s.class).filter(Boolean))).sort((a, b) => {
+    const getType = (c: string) => c.toLowerCase().includes('ber') ? 0 : c.toLowerCase().includes('maternal') ? 1 : 2
+    return getType(a) - getType(b) || a.localeCompare(b, 'pt-BR', { numeric: true })
+  })
 
   const handleRegisterAbsence = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -116,17 +123,32 @@ export default function FaltasPage() {
       <Card>
         <CardHeader>
           <CardTitle>Alunos da Escola</CardTitle>
-          <CardDescription>Busque e selecione o aluno para registrar a falta</CardDescription>
+          <CardDescription>Filtre por turma ou busque o aluno para registrar a falta</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="relative max-w-sm mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar aluno, responsável ou turma..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="pl-10"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr_220px] gap-3 mb-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar aluno ou responsável..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <div>
+              <Select
+                value={classFilter}
+                onValueChange={setClassFilter}
+              >
+                <option value="">Todas as turmas ({students.length})</option>
+                {classOptions.map(cls => (
+                  <option key={cls} value={cls}>
+                    {cls} ({students.filter(s => s.class === cls).length})
+                  </option>
+                ))}
+              </Select>
+            </div>
           </div>
 
           {loading ? (
@@ -150,7 +172,7 @@ export default function FaltasPage() {
                   {filteredStudents.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        Nenhum aluno encontrado
+                        {classFilter ? `Nenhum aluno na turma ${classFilter}` : 'Nenhum aluno encontrado'}
                       </TableCell>
                     </TableRow>
                   ) : (
