@@ -97,7 +97,7 @@ export default function FaltasAdminPage() {
   }
 
   return (
-    <div className="space-y-6 bg-gradient-to-br from-indigo-50 via-white to-blue-50 -m-4 p-4 pt-6 min-h-screen rounded-xl">
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">

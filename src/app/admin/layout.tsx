@@ -99,7 +99,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!user || user.role !== 'admin') return null
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-blue-50">
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
