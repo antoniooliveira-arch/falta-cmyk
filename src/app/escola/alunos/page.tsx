@@ -240,14 +240,14 @@ export default function AlunosPage() {
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={handleCloseModal}>
-          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-gradient-to-b from-white via-indigo-50/20 to-blue-50/60 shadow-2xl border-2 border-primary/20" onClick={e => e.stopPropagation()}>
             <CardHeader className="bg-gradient-to-r from-primary to-blue-500 text-primary-foreground rounded-t-lg">
               <CardTitle>{editingStudent ? 'Editar Aluno' : 'Novo Aluno'}</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3 bg-white/60">
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="name" className="text-sm font-medium">Nome *</label>
+                <div className="rounded-lg bg-white p-3 shadow-sm border">
+                  <label htmlFor="name" className="mb-1.5 block text-sm font-medium">Nome *</label>
                   <Input
                     id="name"
                     value={formData.name}
@@ -256,8 +256,8 @@ export default function AlunosPage() {
                     placeholder="Nome do aluno"
                   />
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="responsible" className="text-sm font-medium">Responsável *</label>
+                <div className="rounded-lg bg-white p-3 shadow-sm border">
+                  <label htmlFor="responsible" className="mb-1.5 block text-sm font-medium">Responsável *</label>
                   <Input
                     id="responsible"
                     value={formData.responsible}
@@ -266,8 +266,8 @@ export default function AlunosPage() {
                     placeholder="Nome do responsável"
                   />
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="class" className="text-sm font-medium">Turma *</label>
+                <div className="rounded-lg bg-white p-3 shadow-sm border">
+                  <label htmlFor="class" className="mb-1.5 block text-sm font-medium">Turma *</label>
                   {classOption === '__custom__' ? (
                     <Input
                       id="class"
@@ -298,8 +298,8 @@ export default function AlunosPage() {
                     </>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="phone1" className="text-sm font-medium">Fone 1 *</label>
+                <div className="rounded-lg bg-white p-3 shadow-sm border">
+                  <label htmlFor="phone1" className="mb-1.5 block text-sm font-medium">Fone 1 *</label>
                   <Input
                     id="phone1"
                     type="tel"
@@ -309,8 +309,8 @@ export default function AlunosPage() {
                     placeholder="(99) 99999-9999"
                   />
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="phone2" className="text-sm font-medium">Fone 2</label>
+                <div className="rounded-lg bg-white p-3 shadow-sm border">
+                  <label htmlFor="phone2" className="mb-1.5 block text-sm font-medium">Fone 2</label>
                   <Input
                     id="phone2"
                     type="tel"
