@@ -13,8 +13,11 @@ export default function EscolaDashboardPage() {
   const { user } = useAuth()
   const [alerts, setAlerts] = useState<{ name: string; responsible: string; class: string; total: number }[]>([])
   const [alertsLoading, setAlertsLoading] = useState(true)
+  const [schoolName, setSchoolName] = useState<string | null>(null)
 
   const supabase = createClient()
+
+  const schoolNameDisplay = user?.school_name || schoolName
 
   const fetchAlerts = async () => {
     if (!user?.school_id) return
@@ -61,6 +64,19 @@ export default function EscolaDashboardPage() {
     fetchAlerts()
   }, [user?.school_id])
 
+  useEffect(() => {
+    if (user?.school_name || !user?.school_id) return
+    ;(async () => {
+      try {
+        const { data, error } = await supabase.from('schools').select('name').eq('id', user.school_id).maybeSingle()
+        if (error) throw error
+        setSchoolName((data as any)?.name || null)
+      } catch (error) {
+        console.error('Error fetching school name:', error)
+      }
+    })()
+  }, [user?.school_id, user?.school_name])
+
   const actions = [
     {
       name: 'Registrar Faltas',
@@ -90,7 +106,7 @@ export default function EscolaDashboardPage() {
     <div className="space-y-6">
       <div className="rounded-xl bg-gradient-to-r from-primary to-blue-500 p-6 text-primary-foreground shadow-lg">
         <p className="text-sm opacity-90">Você está logado na escola:</p>
-        <h1 className="text-3xl font-bold mt-1 break-words">{user?.school_name}</h1>
+        <h1 className="text-3xl font-bold mt-1 break-words">{schoolNameDisplay}</h1>
         <p className="text-primary-foreground/90 mt-2">
           Gerencie as faltas dos seus alunos de forma simples e rápida.
         </p>

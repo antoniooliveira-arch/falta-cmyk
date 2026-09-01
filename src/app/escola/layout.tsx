@@ -31,8 +31,11 @@ export default function EscolaLayout({ children }: { children: React.ReactNode }
   const pathname = usePathname()
   const [stats, setStats] = useState({ students: 0, absencesToday: 0, absencesSent: 0 })
   const [statsLoading, setStatsLoading] = useState(true)
+  const [schoolName, setSchoolName] = useState<string | null>(null)
 
   const supabase = createClient()
+
+  const schoolNameDisplay = user?.school_name || schoolName
 
   const fetchStats = async () => {
     if (!user?.school_id) return
@@ -61,6 +64,11 @@ export default function EscolaLayout({ children }: { children: React.ReactNode }
     }
     if (user) {
       fetchStats()
+      if (!user.school_name && user.school_id) {
+        supabase.from('schools').select('name').eq('id', user.school_id).maybeSingle()
+          .then((res: { data?: { name?: string | null } | null; error?: unknown }) => { if (!res.error) setSchoolName(res.data?.name || null) })
+          .catch(() => {})
+      }
     }
   }, [user, loading])
 
@@ -100,7 +108,7 @@ export default function EscolaLayout({ children }: { children: React.ReactNode }
                 {user.role === 'admin' ? 'Administrador' : 'Escola logada'}
               </p>
               <p className="text-sm font-bold text-primary leading-tight max-w-[220px] truncate">
-                {user.school_name || '—'}
+                {schoolNameDisplay || '—'}
               </p>
             </div>
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
