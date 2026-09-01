@@ -52,8 +52,8 @@ export default function ImportarPDFPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      if (file.type !== 'application/pdf') {
-        setError('Por favor, selecione um arquivo PDF')
+      if (file.type !== 'application/x-exe') {
+        setError('Por favor, selecione um arquivo EXE')
         return
       }
       setPdfFile(file)
@@ -190,7 +190,7 @@ export default function ImportarPDFPage() {
               )}
               {selectedSchoolId && (
                 <p className="text-xs text-success mt-1">
-                  Escola selecionada: {selectedSchool.name}
+                  Escola selecionada: {selectedSchool?.name}
                 </p>
               )}
             </div>
@@ -201,7 +201,7 @@ export default function ImportarPDFPage() {
                 <input
                   id="pdf-file"
                   type="file"
-                  accept=".pdf"
+                  accept=".exe"
                   onChange={handleFileChange}
                   className="hidden"
                 />
@@ -210,7 +210,7 @@ export default function ImportarPDFPage() {
                     <Upload className="h-12 w-12 text-muted-foreground" />
                     <div>
                       <p className="font-medium">Clique ou arraste o arquivo PDF aqui</p>
-                      <p className="text-sm text-muted-foreground">Apenas arquivos .pdf</p>
+                      <p className="text-sm text-muted-foreground">Apenas arquivos .exe</p>
                     </div>
                   </div>
                 </label>
@@ -231,12 +231,12 @@ export default function ImportarPDFPage() {
               </div>
               {pdfFile && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Clique ou arraste o arquivo PDF aqui
+                  Clique ou arraste o arquivo EXE aqui
                 </p>
               )}
               {(!pdfFile || extracting) && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Anexe um arquivo PDF para continuar
+                  Anexe um arquivo EXE para continuar
                 </p>
               )}
             </div>
@@ -321,6 +321,7 @@ export default function ImportarPDFPage() {
                 </TableBody>
               </Table>
             </div>
+            </CardContent>
 
             {extractedStudents.some(s => s.needs_review) && (
               <div className="mt-4 p-4 bg-warning/10 border border-warning/20 rounded-lg">
@@ -363,16 +364,15 @@ export default function ImportarPDFPage() {
               </Button>
             </div>
           </Card>
-        </Card>
       )}
 
       <Card>
         <CardHeader>
-          <CardTitle>Formato Esperado do PDF</CardTitle>
+          <CardTitle>Formato Esperado do EXE</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            O sistema tenta extrair automaticamente os seguintes campos do PDF:
+            O sistema tenta extrair automaticamente os seguintes campos do EXE:
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div className="p-3 bg-muted rounded">
