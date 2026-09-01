@@ -97,7 +97,7 @@ export default function FaltasAdminPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-gradient-to-br from-indigo-50 via-white to-blue-50 -m-4 p-4 pt-6 min-h-screen rounded-xl">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -271,10 +271,10 @@ export default function FaltasAdminPage() {
       {selectedAbsence && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setSelectedAbsence(null)}>
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <CardHeader>
+            <CardHeader className="bg-gradient-to-r from-primary to-blue-500 text-primary-foreground rounded-t-lg">
               <div className="flex items-center justify-between">
                 <CardTitle>Detalhes da Falta</CardTitle>
-                <Button variant="ghost" size="icon" onClick={() => setSelectedAbsence(null)}>
+                <Button variant="ghost" size="icon" onClick={() => setSelectedAbsence(null)} className="text-primary-foreground hover:bg-white/20">
                   <span className="sr-only">Fechar</span>
                   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M18 6 6 18" />

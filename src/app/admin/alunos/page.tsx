@@ -149,7 +149,7 @@ export default function AlunosAdminPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-gradient-to-br from-indigo-50 via-white to-blue-50 -m-4 p-4 pt-6 min-h-screen rounded-xl">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -284,7 +284,7 @@ export default function AlunosAdminPage() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={handleCloseModal}>
           <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <CardHeader>
+            <CardHeader className="bg-gradient-to-r from-primary to-blue-500 text-primary-foreground rounded-t-lg">
               <CardTitle>{editingStudent ? 'Editar Aluno' : 'Novo Aluno'}</CardTitle>
             </CardHeader>
             <CardContent>
