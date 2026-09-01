@@ -11,6 +11,14 @@ const COLUMN_ALIASES: Record<string, keyof PDFStudentData> = {
   'RESPONSÁVEL': 'responsible',
   'RESPONSAVEL': 'responsible',
   'NOME DO RESPONSÁVEL': 'responsible',
+  'FILIAÇÃO': 'responsible',
+  'FILIACAO': 'responsible',
+  'FILIAÇÃO 1': 'responsible',
+  'FILIACAO 1': 'responsible',
+  'FILIAÇÃO 2': 'responsible',
+  'FILIACAO 2': 'responsible',
+  'RESPONSÁVEL 1': 'responsible',
+  'RESPONSAVEL 1': 'responsible',
   'TURMA': 'class',
   'CLASSE': 'class',
   'SÉRIE': 'class',
@@ -47,12 +55,45 @@ function mapColumns(headers: string[]): Map<number, keyof PDFStudentData> {
   return columnMap
 }
 
+function extractResponsibleName(raw: string): string {
+  const value = raw.trim()
+
+  const filiacaoMatch = value.match(/Filia[çc][aã]o\s*1\s*[:*-]?\s*([A-Za-zÁ-ÿÀ-ú\s]+?)\s+End/iu)
+  if (filiacaoMatch) {
+    return filiacaoMatch[1].trim()
+  }
+
+  const nameUntilEnd = value.match(/^([A-Za-zÁ-ÿÀ-ú\s]+?)\s+End/i)
+  if (nameUntilEnd) {
+    return nameUntilEnd[1].trim()
+  }
+
+  return value.replace(/\s*End\.?:?\s*.*$/i, '').trim()
+}
+
+function cleanStudentName(raw: string): string {
+  return raw
+    .replace(/\d{6,}\s*$/, '')
+    .trim()
+    .replace(/\s{2,}/g, ' ')
+}
+
+function extractPhone(raw: string): string {
+  const phonePattern = /\(?\d{2,3}\)?\s*\d{4,5}[-.\s]?\d{4}/g
+  const matches = raw.match(phonePattern)
+  if (matches) {
+    return matches[0].replace(/\D/g, '')
+  }
+  return raw.replace(/\D/g, '')
+}
+
 function validateAndCleanStudent(data: Partial<PDFStudentData>): PDFStudentData {
-  const name = (data.name || '').trim()
-  const responsible = (data.responsible || '').trim()
+  const name = cleanStudentName(data.name || '')
+  const responsible = extractResponsibleName(data.responsible || '')
   const className = (data.class || '').trim()
-  const phone1Raw = (data.phone1 || '').trim()
-  const phone2Raw = (data.phone2 || '').trim()
+  const phone1 = extractPhone(data.phone1 || '')
+  const phone2Raw = extractPhone(data.phone2 || '')
+  const phone2 = phone2Raw && phone2Raw.length >= 10 ? phone2Raw : null
 
   let needsReview = false
   const reviewReasons: string[] = []
@@ -70,9 +111,6 @@ function validateAndCleanStudent(data: Partial<PDFStudentData>): PDFStudentData 
     reviewReasons.push('Turma inválida')
   }
 
-  const phone1 = phone1Raw.replace(/\D/g, '')
-  const phone2 = phone2Raw ? phone2Raw.replace(/\D/g, '') : null
-
   if (!phone1 || phone1.length < 10) {
     needsReview = true
     reviewReasons.push('Fone 1 inválido')
@@ -83,7 +121,7 @@ function validateAndCleanStudent(data: Partial<PDFStudentData>): PDFStudentData 
     responsible,
     class: className,
     phone1,
-    phone2: phone2 && phone2.length >= 10 ? phone2 : null,
+    phone2,
     needs_review: needsReview,
     review_reason: needsReview ? reviewReasons.join('; ') : undefined
   }
@@ -129,8 +167,15 @@ export async function parseExcel(file: File): Promise<PDFStudentData[]> {
           const rawData: Partial<PDFStudentData> = {}
           columnMap.forEach((field, colIndex) => {
             const value = row[colIndex]
-            if (value !== undefined && value !== null) {
-              (rawData as Record<string, unknown>)[field] = String(value).trim()
+            if (value === undefined || value === null) return
+            const strValue = String(value).trim()
+            if (!strValue) return
+            if (field === 'responsible') {
+              rawData.responsible = strValue
+              return
+            }
+            if ((rawData as Record<string, unknown>)[field] === undefined) {
+              (rawData as Record<string, unknown>)[field] = strValue
             }
           })
 
