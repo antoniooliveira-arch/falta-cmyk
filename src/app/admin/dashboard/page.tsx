@@ -6,15 +6,30 @@ import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Select } from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
 import Link from 'next/link'
-import { Building, Users, ClipboardList, FileText, UserCog, Settings, Search, Filter, Plus, TrendingUp, AlertTriangle } from 'lucide-react'
+import { School } from '@/types/database'
+import { Building, Users, ClipboardList, FileText, UserCog, Settings, Search, Filter, Plus, TrendingUp, AlertTriangle, Download } from 'lucide-react'
 
 export default function AdminDashboardPage() {
   const { user } = useAuth()
-  const [alerts, setAlerts] = useState<{ name: string; responsible: string; class: string; school: string; total: number }[]>([])
+  const [alerts, setAlerts] = useState<{ name: string; responsible: string; class: string; school: string; schoolId: string; total: number }[]>([])
   const [alertsLoading, setAlertsLoading] = useState(true)
+  const [schools, setSchools] = useState<School[]>([])
+  const [schoolFilter, setSchoolFilter] = useState('TODAS')
 
   const supabase = createClient()
+
+  const fetchSchools = async () => {
+    try {
+      const { data, error } = await supabase.from('schools').select('id, name').order('name')
+      if (error) throw error
+      setSchools(data || [])
+    } catch (error) {
+      console.error('Error fetching schools:', error)
+    }
+  }
 
   const fetchAlerts = async () => {
     try {
@@ -22,13 +37,13 @@ export default function AdminDashboardPage() {
       since.setDate(since.getDate() - 30)
       const { data, error } = await supabase
         .from('absences')
-        .select('student_id, students(id, name, responsible, class, schools(name))')
+        .select('student_id, students(id, name, responsible, class, schools(id, name))')
         .gte('absence_date', since.toISOString().split('T')[0])
         .in('status', ['ENVIADA', 'VISUALIZADA', 'REGISTRADA'])
 
       if (error) throw error
 
-      const countByStudent = new Map<string, { total: number; name: string; responsible: string; class: string; school: string }>()
+      const countByStudent = new Map<string, { total: number; name: string; responsible: string; class: string; school: string; schoolId: string }>()
       ;(data || []).forEach((row: any) => {
         const student = row.students as any
         if (!student) return
@@ -37,7 +52,8 @@ export default function AdminDashboardPage() {
           name: student.name,
           responsible: student.responsible,
           class: student.class,
-          school: student.schools?.name || '—'
+          school: student.schools?.name || '—',
+          schoolId: student.schools?.id || ''
         }
         cur.total += 1
         countByStudent.set(row.student_id, cur)
@@ -46,7 +62,7 @@ export default function AdminDashboardPage() {
       const alertList = Array.from(countByStudent.values())
         .filter(a => a.total >= 3)
         .sort((a, b) => b.total - a.total)
-        .map(({ total, name, responsible, class: cls, school }) => ({ total, name, responsible, class: cls, school }))
+        .map(({ total, name, responsible, class: cls, school, schoolId }) => ({ total, name, responsible, class: cls, school, schoolId }))
 
       setAlerts(alertList)
     } catch (error) {
@@ -58,7 +74,29 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     fetchAlerts()
+    fetchSchools()
   }, [])
+
+  const filteredAlerts =
+    schoolFilter === 'TODAS' ? alerts : alerts.filter(a => a.schoolId === schoolFilter)
+
+  const selectedSchool = schoolFilter === 'TODAS' ? null : schools.find(s => s.id === schoolFilter)
+
+  const exportCSV = () => {
+    const header = 'Aluno,Responsavel,Turma,Escola,Faltas (30 dias)'
+    const rows = filteredAlerts.map(a =>
+      `"${a.name}","${a.responsible}","${a.class}","${a.school}",${a.total}`
+    )
+    const csv = [header, ...rows].join('\n')
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    const label = selectedSchool ? selectedSchool.name : 'todas'
+    link.download = `alunos_3_faltas_${label.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
 
   const actions = [
     {
@@ -195,25 +233,40 @@ export default function AdminDashboardPage() {
       </div>
 
       <Card className="border-amber-400 bg-amber-50/50">
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <CardTitle className="flex items-center gap-2 text-amber-700">
             <AlertTriangle className="h-5 w-5" />
-            Alunos com 3 ou mais faltas (últimos 30 dias / todas as escolas)
+            Alunos com 3 ou mais faltas (últimos 30 dias{selectedSchool ? ` - ${selectedSchool.name}` : ' - todas as escolas'})
           </CardTitle>
-          <Badge variant="secondary">{alerts.length}</Badge>
+          <div className="flex items-center gap-3">
+            <div className="w-64">
+              <Label className="mb-1 block text-xs text-amber-700">Filtrar por escola</Label>
+              <Select value={schoolFilter} onValueChange={setSchoolFilter}>
+                <option value="TODAS">Todas as escolas</option>
+                {schools.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </Select>
+            </div>
+            <Button variant="outline" className="mt-5" onClick={exportCSV}>
+              <Download className="h-4 w-4 mr-2" />
+              Exportar
+            </Button>
+            <Badge variant="secondary">{filteredAlerts.length}</Badge>
+          </div>
         </CardHeader>
         <CardContent>
           {alertsLoading ? (
             <div className="flex justify-center py-6">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
             </div>
-          ) : alerts.length === 0 ? (
+          ) : filteredAlerts.length === 0 ? (
             <p className="text-sm text-muted-foreground py-2">
-              Nenhum aluno atingiu 3 faltas nos últimos 30 dias.
+              Nenhum aluno atingiu 3 faltas nos últimos 30 dias{selectedSchool ? ` na escola ${selectedSchool.name}` : ''}.
             </p>
           ) : (
             <ul className="space-y-3">
-              {alerts.map((alert, index) => (
+              {filteredAlerts.map((alert, index) => (
                 <li key={index} className="flex items-center justify-between gap-3 p-3 bg-white rounded-lg border">
                   <div>
                     <p className="font-medium">{alert.name}</p>
