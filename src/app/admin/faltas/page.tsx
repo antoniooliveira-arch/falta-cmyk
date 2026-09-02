@@ -68,7 +68,6 @@ export default function FaltasAdminPage() {
 
   const filteredAbsences = absences.filter(absence => {
     const student = absence.students as any
-    const school = absence.schools as any
     const matchesSearch = search === '' ||
       student?.name?.toLowerCase().includes(search.toLowerCase()) ||
       student?.responsible?.toLowerCase().includes(search.toLowerCase()) ||
@@ -260,8 +259,9 @@ export default function FaltasAdminPage() {
                           <TableCell>{formatDateTime(absence.created_at)}</TableCell>
                           <TableCell>{getStatusBadge(absence.status)}</TableCell>
                           <TableCell>
-                            <Button variant="ghost" size="icon" onClick={() => handleViewAbsence(absence)}>
-                              <Eye className="h-4 w-4" />
+                            <Button variant="outline" size="sm" onClick={() => handleViewAbsence(absence)}>
+                              <Eye className="h-4 w-4 mr-1" />
+                              Detalhes
                             </Button>
                           </TableCell>
                         </TableRow>
