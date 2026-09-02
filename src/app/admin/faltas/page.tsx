@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { useAuth } from '@/lib/auth-context'
 import { createClient } from '@/lib/supabase/client'
 import { Absence, School } from '@/types/database'
@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Search, Filter, Calendar, Download, Eye, Building, Users, GraduationCap, User } from 'lucide-react'
+import { Search, Filter, Calendar, Download, Eye, Building, Users, GraduationCap, User, Phone, Clock, MessageSquare, X } from 'lucide-react'
 import { formatDate, formatDateTime } from '@/lib/utils'
 
 export default function FaltasAdminPage() {
@@ -62,7 +62,7 @@ export default function FaltasAdminPage() {
 
   const schoolAbsences = schoolFilter === 'TODAS'
     ? absences
-    : absences.filter(a => (a.schools as any)?.id === schoolFilter)
+    : absences.filter(a => a.school_id === schoolFilter)
   const classes = [...new Set(schoolAbsences.map(a => (a.students as any)?.class).filter(Boolean))].sort()
   const students = [...new Set(schoolAbsences.map(a => (a.students as any)?.name).filter(Boolean))].sort()
 
@@ -73,7 +73,7 @@ export default function FaltasAdminPage() {
       student?.name?.toLowerCase().includes(search.toLowerCase()) ||
       student?.responsible?.toLowerCase().includes(search.toLowerCase()) ||
       student?.class?.toLowerCase().includes(search.toLowerCase())
-    const matchesSchool = schoolFilter === 'TODAS' || school?.id === schoolFilter
+    const matchesSchool = schoolFilter === 'TODAS' || absence.school_id === schoolFilter
     const matchesClass = classFilter === '' || student?.class === classFilter
     const matchesStudent = studentFilter === '' || student?.name === studentFilter
     const matchesStatus = statusFilter === 'TODOS' || absence.status === statusFilter
@@ -275,73 +275,91 @@ export default function FaltasAdminPage() {
         </CardContent>
       </Card>
 
-      {selectedAbsence && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setSelectedAbsence(null)}>
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <CardHeader className="bg-gradient-to-r from-primary to-blue-500 text-primary-foreground rounded-t-lg">
-              <div className="flex items-center justify-between">
-                <CardTitle>Detalhes da Falta</CardTitle>
-                <Button variant="ghost" size="icon" onClick={() => setSelectedAbsence(null)} className="text-primary-foreground hover:bg-white/20">
-                  <span className="sr-only">Fechar</span>
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                  </svg>
+      {selectedAbsence && (() => {
+        const student = selectedAbsence.students as any
+        const school = selectedAbsence.schools as any
+        const DetailItem = ({ icon: Icon, label, value }: { icon: any; label: string; value: ReactNode }) => (
+          <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
+            <span className="mt-0.5 shrink-0 text-primary">
+              <Icon className="h-4 w-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
+              <p className="font-medium break-words">{value || '—'}</p>
+            </div>
+          </div>
+        )
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setSelectedAbsence(null)}>
+            <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <CardHeader className="bg-gradient-to-r from-primary to-blue-500 text-primary-foreground rounded-t-lg">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    Detalhes da Falta
+                  </CardTitle>
+                  <Button variant="ghost" size="icon" onClick={() => setSelectedAbsence(null)} className="text-primary-foreground hover:bg-white/20">
+                    <X className="h-5 w-5" />
+                    <span className="sr-only">Fechar</span>
+                  </Button>
+                </div>
+                <div className="mt-2">
+                  {getStatusBadge(selectedAbsence.status)}
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-5">
+                <section>
+                  <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                    <User className="h-4 w-4 text-primary" /> Aluno
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <DetailItem icon={User} label="Nome do Aluno" value={student?.name} />
+                    <DetailItem icon={GraduationCap} label="Turma" value={student?.class} />
+                    <DetailItem icon={Building} label="Escola" value={school?.name} />
+                  </div>
+                </section>
+
+                <section>
+                  <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                    <Phone className="h-4 w-4 text-primary" /> Contato do Responsável
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <DetailItem icon={User} label="Responsável" value={student?.responsible} />
+                    <DetailItem icon={Phone} label="Fone 1" value={student?.phone1} />
+                    <DetailItem icon={Phone} label="Fone 2" value={student?.phone2 || 'Não informado'} />
+                  </div>
+                </section>
+
+                <section>
+                  <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                    <Clock className="h-4 w-4 text-primary" /> Registro da Falta
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <DetailItem icon={Calendar} label="Data da Falta" value={formatDate(selectedAbsence.absence_date)} />
+                    <DetailItem icon={Clock} label="Data do Registro" value={formatDateTime(selectedAbsence.created_at)} />
+                  </div>
+                  {selectedAbsence.observation && (
+                    <div className="mt-3 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                      <span className="mt-0.5 shrink-0 text-amber-600">
+                        <MessageSquare className="h-4 w-4" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-xs uppercase tracking-wide text-amber-600">Observação</p>
+                        <p className="font-medium break-words">{selectedAbsence.observation}</p>
+                      </div>
+                    </div>
+                  )}
+                </section>
+
+                <Button variant="outline" onClick={() => setSelectedAbsence(null)} className="w-full">
+                  Fechar
                 </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Escola</p>
-                  <p className="font-medium">{(selectedAbsence.schools as any)?.name}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Aluno</p>
-                  <p className="font-medium">{(selectedAbsence.students as any)?.name}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Turma</p>
-                  <p className="font-medium">{(selectedAbsence.students as any)?.class}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Responsável</p>
-                  <p className="font-medium">{(selectedAbsence.students as any)?.responsible}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Fone 1</p>
-                  <p className="font-medium">{(selectedAbsence.students as any)?.phone1}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Fone 2</p>
-                  <p className="font-medium">{(selectedAbsence.students as any)?.phone2 || 'Não informado'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Data da Falta</p>
-                  <p className="font-medium">{formatDate(selectedAbsence.absence_date)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Data do Registro</p>
-                  <p className="font-medium">{formatDateTime(selectedAbsence.created_at)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Status</p>
-                  <p className="font-medium">{getStatusBadge(selectedAbsence.status)}</p>
-                </div>
-              </div>
-              {selectedAbsence.observation && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Observação</p>
-                  <p className="font-medium">{selectedAbsence.observation}</p>
-                </div>
-              )}
-              <Button variant="outline" onClick={() => setSelectedAbsence(null)} className="w-full">
-                Fechar
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+              </CardContent>
+            </Card>
+          </div>
+        )
+      })()}
     </div>
   )
 }
