@@ -25,6 +25,7 @@ export default function FaltasAdminPage() {
   const [studentFilter, setStudentFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('TODOS')
   const [dateRange, setDateRange] = useState({ start: '', end: '' })
+  const [applied, setApplied] = useState({ search: '', school: 'TODAS', class: '', student: '', status: 'TODOS', start: '', end: '' })
   const [selectedAbsence, setSelectedAbsence] = useState<Absence | null>(null)
 
   const supabase = createClient()
@@ -60,24 +61,25 @@ export default function FaltasAdminPage() {
     fetchData()
   }, [])
 
-  const schoolAbsences = schoolFilter === 'TODAS'
+  const appliedSchool = applied.school
+  const schoolAbsences = appliedSchool === 'TODAS'
     ? absences
-    : absences.filter(a => a.school_id === schoolFilter)
+    : absences.filter(a => a.school_id === appliedSchool)
   const classes = [...new Set(schoolAbsences.map(a => (a.students as any)?.class).filter(Boolean))].sort()
   const students = [...new Set(schoolAbsences.map(a => (a.students as any)?.name).filter(Boolean))].sort()
 
   const filteredAbsences = absences.filter(absence => {
     const student = absence.students as any
-    const matchesSearch = search === '' ||
-      student?.name?.toLowerCase().includes(search.toLowerCase()) ||
-      student?.responsible?.toLowerCase().includes(search.toLowerCase()) ||
-      student?.class?.toLowerCase().includes(search.toLowerCase())
-    const matchesSchool = schoolFilter === 'TODAS' || absence.school_id === schoolFilter
-    const matchesClass = classFilter === '' || student?.class === classFilter
-    const matchesStudent = studentFilter === '' || student?.name === studentFilter
-    const matchesStatus = statusFilter === 'TODOS' || absence.status === statusFilter
-    const matchesDateStart = !dateRange.start || absence.absence_date >= dateRange.start
-    const matchesDateEnd = !dateRange.end || absence.absence_date <= dateRange.end
+    const matchesSearch = applied.search === '' ||
+      student?.name?.toLowerCase().includes(applied.search.toLowerCase()) ||
+      student?.responsible?.toLowerCase().includes(applied.search.toLowerCase()) ||
+      student?.class?.toLowerCase().includes(applied.search.toLowerCase())
+    const matchesSchool = applied.school === 'TODAS' || absence.school_id === applied.school
+    const matchesClass = applied.class === '' || student?.class === applied.class
+    const matchesStudent = applied.student === '' || student?.name === applied.student
+    const matchesStatus = applied.status === 'TODOS' || absence.status === applied.status
+    const matchesDateStart = !applied.start || absence.absence_date >= applied.start
+    const matchesDateEnd = !applied.end || absence.absence_date <= applied.end
     return matchesSearch && matchesSchool && matchesClass && matchesStudent && matchesStatus && matchesDateStart && matchesDateEnd
   })
 
@@ -194,13 +196,22 @@ export default function FaltasAdminPage() {
             </div>
             <div className="space-y-2">
               <Label>&nbsp;</Label>
-              <Button variant="outline" onClick={() => {
-                setSearch(''); setSchoolFilter('TODAS'); setClassFilter(''); setStudentFilter('');
-                setStatusFilter('TODOS'); setDateRange({ start: '', end: '' })
-              }} className="w-full">
-                <Filter className="h-4 w-4 mr-2" />
-                Filtrar
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button variant="default" onClick={() => setApplied({
+                  search, school: schoolFilter, class: classFilter, student: studentFilter,
+                  status: statusFilter, start: dateRange.start, end: dateRange.end
+                })} className="w-full">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filtrar
+                </Button>
+                <Button variant="outline" onClick={() => {
+                  setSearch(''); setSchoolFilter('TODAS'); setClassFilter(''); setStudentFilter('');
+                  setStatusFilter('TODOS'); setDateRange({ start: '', end: '' })
+                  setApplied({ search: '', school: 'TODAS', class: '', student: '', status: 'TODOS', start: '', end: '' })
+                }} className="w-full">
+                  Limpar Filtros
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
