@@ -92,19 +92,17 @@ export default function ImportarPDFPage() {
     setError('')
 
     try {
-      const validStudents = extractedStudents.filter(s => !s.needs_review)
-      
-      if (validStudents.length === 0) {
-        setError('Nenhum aluno válido para importar. Revise os dados primeiro.')
-        return
-      }
+      const defaultName = 'ALUNO SEM NOME'
+      const defaultResponsible = 'NÃO INFORMADO'
+      const defaultClass = 'SEM TURMA'
+      const defaultPhone = 'NÃO INFORMADO'
 
-      const studentsToInsert = validStudents.map(s => ({
-        name: s.name,
-        responsible: s.responsible,
-        class: s.class,
-        phone1: s.phone1,
-        phone2: s.phone2,
+      const studentsToInsert = extractedStudents.map(s => ({
+        name: s.name && s.name.length >= 2 ? s.name : defaultName,
+        responsible: s.responsible && s.responsible.length >= 2 ? s.responsible : defaultResponsible,
+        class: s.class && s.class.trim() ? s.class : defaultClass,
+        phone1: s.phone1 && s.phone1.length >= 10 ? s.phone1 : defaultPhone,
+        phone2: s.phone2 || null,
         school_id: selectedSchoolId
       }))
 
@@ -121,7 +119,7 @@ export default function ImportarPDFPage() {
       if (fileInput) fileInput.value = ''
       setImporting(false)
       // Success notification - would normally use toast or similar
-      // alert(`${validStudents.length} aluno(s) importado(s) com sucesso!`)
+      // alert(`${studentsToInsert.length} aluno(s) importado(s) com sucesso!`)
     } catch (err) {
       setError('Ocorreu um erro ao processar o arquivo. Tente novamente.')
       setImporting(false)
@@ -328,11 +326,11 @@ export default function ImportarPDFPage() {
               <div className="mt-4 p-4 bg-warning/10 border border-warning/20 rounded-lg">
                 <p className="font-medium text-warning flex items-center gap-2">
                   <AlertCircle className="h-5 w-5" />
-                  Atenção: {extractedStudents.filter(s => s.needs_review).length} aluno(s) precisam de revisão
+                  Atenção: {extractedStudents.filter(s => s.needs_review).length} aluno(s) com dados incompletos ou inválidos
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Alunos com dados incompletos ou inválidos não serão importados. 
-                  Corrija a planilha ou cadastre manualmente.
+                  Estes alunos serão importados mesmo assim. Campos incompletos receberão valores padrão
+                  (ex.: "SEM TURMA", "NÃO INFORMADO"). Corrija os dados depois, se necessário.
                 </p>
               </div>
             )}
@@ -348,7 +346,7 @@ export default function ImportarPDFPage() {
               </Button>
               <Button
                 onClick={handleImport}
-                disabled={!selectedSchoolId || importing || extractedStudents.every(s => s.needs_review)}
+                disabled={!selectedSchoolId || importing}
                 className="flex-1"
               >
                 {importing ? (
@@ -359,7 +357,7 @@ export default function ImportarPDFPage() {
                 ) : (
                   <>
                     <CheckCircle className="h-4 w-4 mr-2" />
-                    Confirmar Implantação ({extractedStudents.filter(s => !s.needs_review).length})
+                    Confirmar Implantação ({extractedStudents.length})
                   </>
                 )}
               </Button>
