@@ -291,7 +291,7 @@ export default function FaltasAdminPage() {
         )
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setSelectedAbsence(null)}>
-            <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-b from-slate-100 to-white" onClick={e => e.stopPropagation()}>
               <CardHeader className="bg-gradient-to-r from-primary to-blue-500 text-primary-foreground rounded-t-lg">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
