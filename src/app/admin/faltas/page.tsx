@@ -200,7 +200,7 @@ export default function FaltasAdminPage() {
                 setStatusFilter('TODOS'); setDateRange({ start: '', end: '' })
               }} className="w-full">
                 <Filter className="h-4 w-4 mr-2" />
-                Limpar Filtros
+                Filtrar
               </Button>
             </div>
           </div>
